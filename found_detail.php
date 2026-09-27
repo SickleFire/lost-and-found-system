@@ -28,9 +28,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isLoggedIn()) {
             $error = 'You have already submitted a claim for this found item.';
         } else {
             $stmtInsert = $pdo->prepare("INSERT INTO claims (found_item_id, user_id, proof_description, status) VALUES (?, ?, ?, 'Pending')");
-            if ($stmtInsert->execute([$id, $_SESSION['user_id']])) {
+            if ($stmtInsert->execute([$id, $_SESSION['user_id'], $proof_description])) {
                 // Update found item status to Pending Verification
-                $pdo->prepare("UPDATE found_items SET status = 'Pending Verification' WHERE id = ?")->execute([$id]);
+                $stmtUpdate = $pdo->prepare("UPDATE found_items SET status = 'Pending Verification' WHERE id = ?");
+                $stmtUpdate->execute([$id]);
+
                 $success = 'Your claim has been successfully submitted and is pending staff verification.';
                 // Refresh item status
                 $item['status'] = 'Pending Verification';
