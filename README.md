@@ -71,10 +71,10 @@ The database `lost_and_found_db` consists of 4 tightly integrated relational tab
 
 - **Administrator**:
   - Username: `admin`
-  - Password: `password123`
+  - Password: `password`
 - **Staff Member**:
   - Username: `staff_sarah`
-  - Password: `password123`
+  - Password: `password`
 - **Community Member**:
   - Username: `john_doe` (or `jane_smith`)
-  - Password: `password123`
+  - Password: `password`
