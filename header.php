@@ -1,3 +1,8 @@
+<?php
+// Determine root prefix if included from a subfolder like /admin/
+$is_admin_subfolder = (strpos($_SERVER['PHP_SELF'], '/admin/') !== false);
+$root_prefix = $is_admin_subfolder ? '../' : '';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -244,7 +249,7 @@
 <!-- Navigation Bar -->
 <nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow-sm">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="index.php">
+        <a class="navbar-brand fw-bold" href="<?php echo $root_prefix; ?>index.php">
             <i class="fa-solid fa-box-open me-2"></i>Community Lost &amp; Found
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -252,29 +257,29 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
-                <li class="nav-item"><a class="nav-link" href="index.php"><i class="fa-solid fa-home me-1"></i> Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="lost_items.php"><i class="fa-solid fa-search me-1"></i> Lost Items</a></li>
-                <li class="nav-item"><a class="nav-link" href="found_items.php"><i class="fa-solid fa-bullhorn me-1"></i> Found Items</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?php echo $root_prefix; ?>index.php"><i class="fa-solid fa-home me-1"></i> Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?php echo $root_prefix; ?>lost_items.php"><i class="fa-solid fa-search me-1"></i> Lost Items</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?php echo $root_prefix; ?>found_items.php"><i class="fa-solid fa-bullhorn me-1"></i> Found Items</a></li>
                 <?php if (isLoggedIn()): ?>
-                    <li class="nav-item"><a class="nav-link" href="my_items.php"><i class="fa-solid fa-folder-open me-1"></i> My Posts &amp; Claims</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?php echo $root_prefix; ?>my_items.php"><i class="fa-solid fa-folder-open me-1"></i> My Posts &amp; Claims</a></li>
                 <?php endif; ?>
             </ul>
             <ul class="navbar-nav ms-auto">
                 <?php if (isLoggedIn()): ?>
                     <?php if (isAdminOrStaff()): ?>
-                        <li class="nav-item"><a class="nav-link text-warning fw-semibold" href="admin/dashboard.php"><i class="fa-solid fa-gauge me-1"></i> Admin Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link text-warning fw-semibold" href="<?php echo $root_prefix; ?>admin/dashboard.php"><i class="fa-solid fa-gauge me-1"></i> Admin Dashboard</a></li>
                     <?php endif; ?>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                             <i class="fa-solid fa-user-circle me-1"></i> <?php echo htmlspecialchars($_SESSION['full_name']); ?>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="logout.php"><i class="fa-solid fa-sign-out-alt me-2"></i> Logout</a></li>
+                            <li><a class="dropdown-item" href="<?php echo $root_prefix; ?>logout.php"><i class="fa-solid fa-sign-out-alt me-2"></i> Logout</a></li>
                         </ul>
                     </li>
                 <?php else: ?>
-                    <li class="nav-item"><a class="nav-link" href="login.php"><i class="fa-solid fa-sign-in-alt me-1"></i> Login</a></li>
-                    <li class="nav-item"><a class="btn btn-warning ms-2" href="register.php"><i class="fa-solid fa-user-plus me-1"></i> Register</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<?php echo $root_prefix; ?>login.php"><i class="fa-solid fa-sign-in-alt me-1"></i> Login</a></li>
+                    <li class="nav-item"><a class="btn btn-warning ms-2" href="<?php echo $root_prefix; ?>register.php"><i class="fa-solid fa-user-plus me-1"></i> Register</a></li>
                 <?php endif; ?>
             </ul>
         </div>
