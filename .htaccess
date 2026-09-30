@@ -1,0 +1,4 @@
+# Disable MultiViews which can conflict with 404 error documents in Apache
+Options -MultiViews
+
+ErrorDocument 404 /lost-and-found-system/404.php
