@@ -60,10 +60,10 @@ The database `lost_and_found_db` consists of 4 tightly integrated relational tab
    - Open **phpMyAdmin** (`http://localhost/phpmyadmin/`).
    - Import the provided `database.sql` file, or create a database named `lost_and_found_db` and run the SQL script.
 3. **Project Placement**:
-   - Place the project folder (e.g. `lost_and_found`) inside your web server root directory (`htdocs` in XAMPP).
+   - Place the project folder (e.g. `lost-and-found-system`) inside your web server root directory (`htdocs` in XAMPP).
 4. **Access the System**:
    - Open your browser and navigate to:
-     `http://localhost/lost_and_found/index.php`
+     `http://localhost/lost-and-found-system/index.php`
 
 ---
 
