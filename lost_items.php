@@ -10,7 +10,8 @@ $query = "SELECT l.*, u.full_name FROM lost_items l JOIN users u ON l.user_id = 
 $params = [];
 
 if (!empty($search)) {
-    $query .= " AND (l.title LIKE ? OR l.description LIKE ? OR l.location_lost LIKE ?)";
+    $query .= " AND (l.title LIKE ? OR l.description LIKE ? OR l.location_lost LIKE ? OR u.full_name LIKE ?)";
+    $params[] = "%$search%";
     $params[] = "%$search%";
     $params[] = "%$search%";
     $params[] = "%$search%";
@@ -58,7 +59,7 @@ include 'header.php';
         <form method="GET" action="lost_items.php" class="row g-3">
             <div class="col-md-4">
                 <label for="search" class="form-label fw-bold small">Search Keyword</label>
-                <input type="text" class="form-control" id="search" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Title, description, location...">
+                <input type="text" class="form-control" id="search" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Item name, reporter, location...">
             </div>
             <div class="col-md-3">
                 <label for="category" class="form-label fw-bold small">Category</label>
