@@ -15,11 +15,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $role = trim($_POST['role'] ?? 'user');
     $newPassword = $_POST['new_password'] ?? '';
 
-    if ($userId <= 0 || $username === '' || $fullName === '' || $email === '') {
-        $error = 'Username, full name, and email are required fields.';
+    if ($userId <= 0 || $username === '' || $fullName === '' || $email === '' || $phone === '' || $role === '') {
+        $error = 'All fields (Username, Full Name, Email, Phone, and Role) are required.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Please enter a valid email address.';
-    } elseif ($phone !== '' && (!preg_match('/^09\d{9}$/', $phone))) {
+    } elseif (!preg_match('/^09\d{9}$/', $phone)) {
         $error = 'Phone number must start with 09 and contain exactly 11 digits (e.g. 09123456789).';
     } else {
         // Check if username or email already taken by another user
@@ -165,7 +165,7 @@ include '../header.php';
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Phone Number</label>
-                        <input type="text" class="form-control" name="phone" value="<?php echo htmlspecialchars($u['phone'] ?? ''); ?>" placeholder="09XXXXXXXXX" pattern="09[0-9]{9}" maxlength="11" title="Phone number must start with 09 and be 11 digits">
+                        <input type="text" class="form-control" name="phone" value="<?php echo htmlspecialchars($u['phone'] ?? ''); ?>" placeholder="09XXXXXXXXX" pattern="09[0-9]{9}" maxlength="11" title="Phone number must start with 09 and be 11 digits" required>
                         <div class="form-text">Must start with 09 and be exactly 11 digits (e.g. 09123456789).</div>
                     </div>
                     <div class="mb-3">
