@@ -22,6 +22,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Passwords do not match.';
     } elseif (strlen($password) < 6) {
         $error = 'Password must be at least 6 characters long.';
+    } elseif (strlen($password) > 20) {
+        $error = 'Password must not exceed 20 characters.';
     } else {
         // Check if username or email already exists
         $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
@@ -82,12 +84,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="password" class="form-label">Password * (Min 6 chars)</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
+                            <label for="password" class="form-label">Password * (6-20 chars)</label>
+                            <input type="password" class="form-control" id="password" name="password" minlength="6" maxlength="20" required>
                         </div>
                         <div class="col-md-6 mb-4">
                             <label for="confirm_password" class="form-label">Confirm Password *</label>
-                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" minlength="6" maxlength="20" required>
                         </div>
                     </div>
 
