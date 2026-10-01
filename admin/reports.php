@@ -54,6 +54,13 @@ include '../header.php';
                 </tbody>
             </table>
         </div>
+    </div>
+
+    <div class="card shadow-sm p-4 mb-4" style="page-break-before: always;">
+        <div class="text-center mb-4">
+            <h3 class="fw-bold">Community Lost & Found System - Official Status Report</h3>
+            <p class="text-muted mb-0">Generated on: <?php echo date('F d, Y H:i:s'); ?></p>
+        </div>
 
         <h4 class="fw-bold text-success mb-3">2. Found Items Summary Report</h4>
         <div class="table-responsive">
