@@ -13,14 +13,20 @@ if ($action && $id) {
         $claim = $stmtClaim->fetch();
         if ($claim) {
             // Update claim status
-            $pdo->prepare("UPDATE claims SET status = 'Approved', admin_notes = 'Claim verified and approved by staff.' WHERE id = ?")->execute([$id]);
+            $stmtUpdateClaim = $pdo->prepare("UPDATE claims SET status = 'Approved', admin_notes = 'Claim verified and approved by staff.' WHERE id = ?");
+            $stmtUpdateClaim->execute([$id]);
+            
             // Update found item status to Claimed
-            $pdo->prepare("UPDATE found_items SET status = 'Claimed' WHERE id = ?")->execute([$claim['found_item_id']]);
+            $stmtUpdateFound = $pdo->prepare("UPDATE found_items SET status = 'Claimed' WHERE id = ?");
+            $stmtUpdateFound->execute([$claim['found_item_id']]);
+            
             // Reject other pending claims for this item
-            $pdo->prepare("UPDATE claims SET status = 'Rejected', admin_notes = 'Another claim was approved for this item.' WHERE found_item_id = ? AND id != ? AND status = 'Pending'")->execute([$claim['found_item_id'], $id]);
+            $stmtRejectOther = $pdo->prepare("UPDATE claims SET status = 'Rejected', admin_notes = 'Another claim was approved for this item.' WHERE found_item_id = ? AND id != ? AND status = 'Pending'");
+            $stmtRejectOther->execute([$claim['found_item_id'], $id]);
         }
     } elseif ($action === 'reject') {
-        $pdo->prepare("UPDATE claims SET status = 'Rejected', admin_notes = 'Claim verification proof was insufficient or rejected by staff.' WHERE id = ?")->execute([$id]);
+        $stmtReject = $pdo->prepare("UPDATE claims SET status = 'Rejected', admin_notes = 'Claim verification proof was insufficient or rejected by staff.' WHERE id = ?");
+        $stmtReject->execute([$id]);
     }
     header("Location: manage_claims.php");
     exit;

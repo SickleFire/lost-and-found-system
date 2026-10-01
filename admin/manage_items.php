@@ -8,11 +8,13 @@ $id = intval($_GET['id'] ?? 0);
 
 if ($action === 'delete' && $id) {
     if ($type === 'lost') {
-        $pdo->prepare("DELETE FROM lost_items WHERE id = ?")->execute([$id]);
+        $stmt = $pdo->prepare("DELETE FROM lost_items WHERE id = ?");
+        $stmt->execute([$id]);
     } else {
-        $pdo->prepare("DELETE FROM found_items WHERE id = ?")->execute([$id]);
+        $stmt = $pdo->prepare("DELETE FROM found_items WHERE id = ?");
+        $stmt->execute([$id]);
     }
-    header("Location: manage_items.php?type=$type");
+    header("Location: manage_items.php?type=" . urlencode($type));
     exit;
 }
 
