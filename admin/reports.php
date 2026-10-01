@@ -14,7 +14,7 @@ include '../header.php';
             <h2 class="fw-bold"><i class="fa-solid fa-print text-dark me-2"></i> Printable Reports</h2>
             <p class="text-muted">Official summary records of lost and found items in the community</p>
         </div>
-        <div>
+        <div class="d-print-none">
             <button onclick="window.print();" class="btn btn-dark fw-bold me-2"><i class="fa-solid fa-print me-1"></i> Print Report</button>
             <a href="dashboard.php" class="btn btn-outline-secondary fw-bold"><i class="fa-solid fa-arrow-left me-1"></i> Dashboard</a>
         </div>
@@ -32,7 +32,6 @@ include '../header.php';
             <table class="table table-bordered table-sm align-middle">
                 <thead class="table-light">
                     <tr>
-                        <th>ID</th>
                         <th>Title</th>
                         <th>Category</th>
                         <th>Reporter</th>
@@ -44,7 +43,6 @@ include '../header.php';
                 <tbody>
                     <?php foreach ($lostItems as $item): ?>
                         <tr>
-                            <td><?php echo $item['id']; ?></td>
                             <td class="fw-bold"><?php echo htmlspecialchars($item['title']); ?></td>
                             <td><?php echo htmlspecialchars($item['category']); ?></td>
                             <td><?php echo htmlspecialchars($item['full_name']); ?></td>
@@ -62,7 +60,6 @@ include '../header.php';
             <table class="table table-bordered table-sm align-middle">
                 <thead class="table-light">
                     <tr>
-                        <th>ID</th>
                         <th>Title</th>
                         <th>Category</th>
                         <th>Finder</th>
@@ -74,7 +71,6 @@ include '../header.php';
                 <tbody>
                     <?php foreach ($foundItems as $item): ?>
                         <tr>
-                            <td><?php echo $item['id']; ?></td>
                             <td class="fw-bold"><?php echo htmlspecialchars($item['title']); ?></td>
                             <td><?php echo htmlspecialchars($item['category']); ?></td>
                             <td><?php echo htmlspecialchars($item['full_name']); ?></td>
