@@ -8,32 +8,35 @@ $error = '';
 // Handle Edit User
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'edit') {
     $userId = intval($_POST['user_id'] ?? 0);
+    $username = trim($_POST['username'] ?? '');
     $fullName = trim($_POST['full_name'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $phone = trim($_POST['phone'] ?? '');
     $role = trim($_POST['role'] ?? 'user');
     $newPassword = $_POST['new_password'] ?? '';
 
-    if ($userId <= 0 || $fullName === '' || $email === '') {
-        $error = 'Full name and email are required fields.';
+    if ($userId <= 0 || $username === '' || $fullName === '' || $email === '') {
+        $error = 'Username, full name, and email are required fields.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Please enter a valid email address.';
     } else {
-        // Check if email already taken by another user
-        $stmtCheck = $pdo->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
-        $stmtCheck->execute([$email, $userId]);
-        if ($stmtCheck->fetch()) {
-            $error = 'Email address is already in use by another account.';
+        // Check if username or email already taken by another user
+        $stmtCheck = $pdo->prepare("SELECT id FROM users WHERE (username = ? OR email = ?) AND id != ?");
+        $stmtCheck->execute([$username, $email, $userId]);
+        $existing = $stmtCheck->fetch();
+
+        if ($existing) {
+            $error = 'Username or email address is already in use by another account.';
         } else {
             if ($newPassword !== '') {
                 // Update with password
                 $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
-                $stmtUpdate = $pdo->prepare("UPDATE users SET full_name = ?, email = ?, phone = ?, role = ?, password = ? WHERE id = ?");
-                $stmtUpdate->execute([$fullName, $email, $phone, $role, $hashedPassword, $userId]);
+                $stmtUpdate = $pdo->prepare("UPDATE users SET username = ?, full_name = ?, email = ?, phone = ?, role = ?, password = ? WHERE id = ?");
+                $stmtUpdate->execute([$username, $fullName, $email, $phone, $role, $hashedPassword, $userId]);
             } else {
                 // Update without changing password
-                $stmtUpdate = $pdo->prepare("UPDATE users SET full_name = ?, email = ?, phone = ?, role = ? WHERE id = ?");
-                $stmtUpdate->execute([$fullName, $email, $phone, $role, $userId]);
+                $stmtUpdate = $pdo->prepare("UPDATE users SET username = ?, full_name = ?, email = ?, phone = ?, role = ? WHERE id = ?");
+                $stmtUpdate->execute([$username, $fullName, $email, $phone, $role, $userId]);
             }
             $success = 'User account updated successfully.';
         }
@@ -146,6 +149,10 @@ include '../header.php';
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-start">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Username</label>
+                        <input type="text" class="form-control" name="username" value="<?php echo htmlspecialchars($u['username']); ?>" required>
+                    </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Full Name</label>
                         <input type="text" class="form-control" name="full_name" value="<?php echo htmlspecialchars($u['full_name']); ?>" required>
