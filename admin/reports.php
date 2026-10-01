@@ -8,6 +8,18 @@ $foundItems = $pdo->query("SELECT f.*, u.full_name FROM found_items f JOIN users
 include '../header.php';
 ?>
 
+<style>
+@media print {
+    body, html {
+        height: auto !important;
+        overflow: visible !important;
+    }
+    .table-responsive {
+        overflow: visible !important;
+    }
+}
+</style>
+
 <div class="container my-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
