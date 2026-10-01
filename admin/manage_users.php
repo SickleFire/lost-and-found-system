@@ -126,53 +126,60 @@ include '../header.php';
                                 <?php endif; ?>
                             </td>
                         </tr>
-
-                        <!-- Edit User Modal -->
-                        <div class="modal fade" id="editUserModal<?php echo $u['id']; ?>" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <form method="POST" action="manage_users.php">
-                                        <input type="hidden" name="action" value="edit">
-                                        <input type="hidden" name="user_id" value="<?php echo $u['id']; ?>">
-                                        <div class="modal-header bg-light">
-                                            <h5 class="modal-title fw-bold"><i class="fa-solid fa-user-pen text-primary me-2"></i> Edit User: <?php echo htmlspecialchars($u['username']); ?></h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body text-start">
-                                            <div class="mb-3">
-                                                <label class="form-label fw-bold">Full Name</label>
-                                                <input type="text" class="form-control" name="full_name" value="<?php echo htmlspecialchars($u['full_name']); ?>" required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label fw-bold">Email Address</label>
-                                                <input type="email" class="form-control" name="email" value="<?php echo htmlspecialchars($u['email']); ?>" required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label fw-bold">Phone Number</label>
-                                                <input type="text" class="form-control" name="phone" value="<?php echo htmlspecialchars($u['phone'] ?? ''); ?>">
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label fw-bold">System Role</label>
-                                                <select class="form-select" name="role">
-                                                    <option value="user" <?php echo $u['role'] === 'user' ? 'selected' : ''; ?>>User</option>
-                                                    <option value="staff" <?php echo $u['role'] === 'staff' ? 'selected' : ''; ?>>Staff</option>
-                                                    <option value="admin" <?php echo $u['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
-                                                </select>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label fw-bold">New Password <span class="text-muted fw-normal small">(Leave blank to keep current password)</span></label>
-                                                <input type="password" class="form-control" name="new_password" placeholder="Enter new password if changing">
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer bg-light">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                            <button type="submit" class="btn btn-primary fw-bold"><i class="fa-solid fa-floppy-disk me-1"></i> Save Changes</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
                     <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modals (Placed outside table container to prevent DOM/Bootstrap glitching) -->
+<?php foreach ($users as $u): ?>
+<div class="modal fade" id="editUserModal<?php echo $u['id']; ?>" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="manage_users.php">
+                <input type="hidden" name="action" value="edit">
+                <input type="hidden" name="user_id" value="<?php echo $u['id']; ?>">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-user-pen text-primary me-2"></i> Edit User: <?php echo htmlspecialchars($u['username']); ?></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-start">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Full Name</label>
+                        <input type="text" class="form-control" name="full_name" value="<?php echo htmlspecialchars($u['full_name']); ?>" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Email Address</label>
+                        <input type="email" class="form-control" name="email" value="<?php echo htmlspecialchars($u['email']); ?>" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Phone Number</label>
+                        <input type="text" class="form-control" name="phone" value="<?php echo htmlspecialchars($u['phone'] ?? ''); ?>">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">System Role</label>
+                        <select class="form-select" name="role">
+                            <option value="user" <?php echo $u['role'] === 'user' ? 'selected' : ''; ?>>User</option>
+                            <option value="staff" <?php echo $u['role'] === 'staff' ? 'selected' : ''; ?>>Staff</option>
+                            <option value="admin" <?php echo $u['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">New Password <span class="text-muted fw-normal small">(Leave blank to keep current password)</span></label>
+                        <input type="password" class="form-control" name="new_password" placeholder="Enter new password if changing">
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary fw-bold"><i class="fa-solid fa-floppy-disk me-1"></i> Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<?php endforeach; ?>
                 </tbody>
             </table>
         </div>
