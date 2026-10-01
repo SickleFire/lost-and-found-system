@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $fullName = trim($_POST['full_name'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $phone = trim($_POST['phone'] ?? '');
-    $role = trim($_POST['role'] ?? 'user');
+    $role = trim($_POST['role'] ?? 'member');
     $newPassword = $_POST['new_password'] ?? '';
 
     if ($userId <= 0 || $username === '' || $fullName === '' || $email === '' || $phone === '' || $role === '') {
@@ -171,7 +171,7 @@ include '../header.php';
                     <div class="mb-3">
                         <label class="form-label fw-bold">System Role</label>
                         <select class="form-select" name="role">
-                            <option value="user" <?php echo $u['role'] === 'user' ? 'selected' : ''; ?>>User</option>
+                            <option value="member" <?php echo $u['role'] === 'member' ? 'selected' : ''; ?>>Member</option>
                             <option value="staff" <?php echo $u['role'] === 'staff' ? 'selected' : ''; ?>>Staff</option>
                             <option value="admin" <?php echo $u['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
                         </select>
