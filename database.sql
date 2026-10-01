@@ -86,17 +86,17 @@ CREATE TABLE `claims` (
 
 -- Users: 1 Admin, 1 Staff, 3 Members
 INSERT INTO `users` (`id`, `username`, `email`, `password`, `full_name`, `phone`, `role`, `created_at`) VALUES
-(1, 'admin', 'admin@community.org', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'System Administrator', '555-0100', 'admin', NOW() - INTERVAL 30 DAY),
-(2, 'staff_sarah', 'sarah@community.org', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Sarah Jenkins (Staff)', '555-0199', 'staff', NOW() - INTERVAL 25 DAY),
-(3, 'john_doe', 'john@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'John Doe', '555-0143', 'member', NOW() - INTERVAL 10 DAY),
-(4, 'jane_smith', 'jane@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Jane Smith', '555-0187', 'member', NOW() - INTERVAL 5 DAY),
-(5, 'alex_jones', 'alex@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Alex Jones', '555-0122', 'member', NOW() - INTERVAL 2 DAY);
+(1, 'admin', 'admin@community.org', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'System Administrator', '09123456789', 'admin', NOW() - INTERVAL 30 DAY),
+(2, 'staff_sarah', 'sarah@community.org', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Sarah Jenkins (Staff)', '09234567890', 'staff', NOW() - INTERVAL 25 DAY),
+(3, 'john_doe', 'john@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'John Doe', '09345678901', 'member', NOW() - INTERVAL 10 DAY),
+(4, 'jane_smith', 'jane@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Jane Smith', '09456789012', 'member', NOW() - INTERVAL 5 DAY),
+(5, 'alex_jones', 'alex@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Alex Jones', '09567890123', 'member', NOW() - INTERVAL 2 DAY);
 
 -- Lost Items
 INSERT INTO `lost_items` (`id`, `user_id`, `title`, `category`, `description`, `location_lost`, `date_lost`, `image_path`, `status`, `created_at`) VALUES
 (1, 3, 'iPhone 13 Pro (Space Gray)', 'Electronics', 'Has a transparent silicone case with a sticker of a cat on the back. Screen protector is slightly cracked at top right.', 'Central Community Park, near fountain', '2026-03-10', NULL, 'Open', NOW() - INTERVAL 8 DAY),
 (2, 4, 'Brown Leather Wallet', 'Accessories', 'Contains driver license, two credit cards, and approximately $45 cash. Brand is Fossil.', 'Main Street Coffee Shop', '2026-03-12', NULL, 'Open', NOW() - INTERVAL 6 DAY),
-(3, 5, 'Golden Retriever puppy collar with tag', 'Pets', 'Blue nylon collar with metal tag engraved with "Buster" and phone number 555-0122.', 'Oakwood Neighborhood Block 4', '2026-03-15', NULL, 'Resolved', NOW() - INTERVAL 3 DAY);
+(3, 5, 'Golden Retriever puppy collar with tag', 'Pets', 'Blue nylon collar with metal tag engraved with "Buster" and phone number 09567890123.', 'Oakwood Neighborhood Block 4', '2026-03-15', NULL, 'Resolved', NOW() - INTERVAL 3 DAY);
 
 -- Found Items
 INSERT INTO `found_items` (`id`, `user_id`, `title`, `category`, `description`, `location_found`, `date_found`, `image_path`, `status`, `created_at`) VALUES
