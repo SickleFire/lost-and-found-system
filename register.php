@@ -16,6 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Please fill in all required fields.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Invalid email format.';
+    } elseif (!empty($phone) && !preg_match('/^09\d{9}$/', $phone)) {
+        $error = 'Phone number must start with 09 and be exactly 11 digits.';
     } elseif ($password !== $confirm_password) {
         $error = 'Passwords do not match.';
     } elseif (strlen($password) < 6) {
@@ -74,7 +76,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <div class="mb-3">
                         <label for="phone" class="form-label">Phone Number</label>
-                        <input type="text" class="form-control" id="phone" name="phone" placeholder="e.g. 555-0199" value="<?php echo htmlspecialchars($_POST['phone'] ?? ''); ?>">
+                        <input type="text" class="form-control" id="phone" name="phone" placeholder="e.g. 09123456789" value="<?php echo htmlspecialchars($_POST['phone'] ?? ''); ?>">
+                        <div class="form-text">Must start with 09 and be 11 digits (if provided).</div>
                     </div>
 
                     <div class="row">
