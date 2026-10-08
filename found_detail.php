@@ -1,8 +1,15 @@
 <?php
 require_once 'db.php';
+
 $id = intval($_GET['id'] ?? 0);
 
-$stmt = $pdo->prepare("SELECT f.*, u.full_name, u.email, u.phone FROM found_items f JOIN users u ON f.user_id = u.id WHERE f.id = ?");
+// Fetch item details utilizing centralized items table structure metrics
+$stmt = $pdo->prepare("SELECT i.*, c.category, s.status, CONCAT(u.firstname, ' ', u.lastname) AS finder_name, u.email, u.phone 
+                       FROM items i 
+                       JOIN users u ON i.user_id = u.user_id 
+                       JOIN categories c ON i.category_id = c.category_id 
+                       JOIN i_status s ON i.status_id = s.status_id 
+                       WHERE i.item_id = ? AND i.item_type = 'Found'");
 $stmt->execute([$id]);
 $item = $stmt->fetch();
 
@@ -11,154 +18,111 @@ if (!$item) {
     exit;
 }
 
-$error = '';
-$success = '';
-
-// Handle claim submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isLoggedIn()) {
-    $proof_description = trim($_POST['proof_description'] ?? '');
-
-    if (empty($proof_description)) {
-        $error = 'Please provide verification details/proof to support your claim.';
-    } else {
-        // Check if user already claimed this item
-        $stmtCheck = $pdo->prepare("SELECT id FROM claims WHERE found_item_id = ? AND user_id = ?");
-        $stmtCheck->execute([$id, $_SESSION['user_id']]);
-        if ($stmtCheck->fetch()) {
-            $error = 'You have already submitted a claim for this found item.';
-        } else {
-            $stmtInsert = $pdo->prepare("INSERT INTO claims (found_item_id, user_id, proof_description, status) VALUES (?, ?, ?, 'Pending')");
-            if ($stmtInsert->execute([$id, $_SESSION['user_id'], $proof_description])) {
-                // Update found item status to Pending Verification
-                $stmtUpdate = $pdo->prepare("UPDATE found_items SET status = 'Pending Verification' WHERE id = ?");
-                $stmtUpdate->execute([$id]);
-
-                $success = 'Your claim has been successfully submitted and is pending staff verification.';
-                // Refresh item status
-                $item['status'] = 'Pending Verification';
-            } else {
-                $error = 'Failed to submit claim. Please try again.';
-            }
-        }
+// Security evaluation check tracking administrative profile access credentials
+$canEdit = false;
+if (isLoggedIn()) {
+    if ($_SESSION['user_id'] == $item['user_id'] || isAdminOrStaff()) {
+        $canEdit = true;
     }
-}
-
-// Fetch existing claims if admin/staff or owner
-$claims = [];
-if (isLoggedIn() && (isAdminOrStaff() || $_SESSION['user_id'] == $item['user_id'])) {
-    $stmtClaims = $pdo->prepare("SELECT c.*, u.full_name, u.email, u.phone FROM claims c JOIN users u ON c.user_id = u.id WHERE c.found_item_id = ?");
-    $stmtClaims->execute([$id]);
-    $claims = $stmtClaims->fetchAll();
 }
 
 include 'header.php';
 ?>
 
-<div class="container my-5">
+<!-- Breadcrumb path alignment navigation elements matching lost view styles layout -->
+<div class="container my-4">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <nav aria-label="breadcrumb" class="mb-3">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="found_items.php">Found Items</a></li>
-                    <li class="breadcrumb-item active" aria-current="page"><?php echo htmlspecialchars($item['title']); ?></li>
+        <div class="col-md-9">
+            <nav style="--bs-breadcrumb-divider: '/';" aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item small"><a href="found_items.php" class="text-decoration-none text-primary">Found Items</a></li>
+                    <li class="breadcrumb-item small text-muted active" aria-current="page"><?php echo htmlspecialchars($item['title']); ?></li>
                 </ol>
             </nav>
+        </div>
+    </div>
+</div>
 
-            <?php if (!empty($error)): ?>
-                <div class="alert alert-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i> <?php echo $error; ?></div>
-            <?php endif; ?>
-
-            <?php if (!empty($success)): ?>
-                <div class="alert alert-success"><i class="fa-solid fa-check-circle me-1"></i> <?php echo $success; ?></div>
-            <?php endif; ?>
-
-            <div class="card shadow-sm p-4 mb-4">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                        <span class="badge bg-success mb-2"><?php echo htmlspecialchars($item['category']); ?></span>
-                        <span class="badge bg-<?php echo $item['status'] === 'Unclaimed' ? 'primary' : ($item['status'] === 'Pending Verification' ? 'warning text-dark' : 'secondary'); ?> mb-2"><?php echo htmlspecialchars($item['status']); ?></span>
-                        <h2 class="fw-bold"><?php echo htmlspecialchars($item['title']); ?></h2>
+<!-- Primary Component Interface Body - FIXED: Added structural width constraints mapping col-md-9 layout -->
+<div class="container mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-9">
+            <div class="card shadow-sm border border-light-subtle p-4 p-md-5 bg-white" style="border-radius: 16px;">
+                
+                <!-- Badge row layout section header component block details -->
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                    <div class="d-flex gap-2 align-items-center flex-wrap">
+                        <!-- Category Badge - FIXED: Solid custom background hex override variables mapping your lost template style perfectly -->
+                        <span class="badge text-white px-2.5 py-1.5 small text-capitalize" style="border-radius: 20px; font-weight: 700; font-size: 0.75rem; background-color: #5c636a !important; padding-left: 12px !important; padding-right: 12px !important; border: none !important; opacity: 1 !important;">
+                            <?php echo htmlspecialchars($item['category']); ?>
+                        </span>
+                        
+                        <!-- Status Badge - FIXED: Solid high-contrast pastel matching your target schema profiles -->
+                        <?php
+                        $statusStyle = "background-color: #c5e8e1 !important; color: #0f5132 !important;"; // Default Open Clean Style Hex
+                        if ($item['status'] === 'Claimed' || $item['status'] === 'Closed') {
+                            $statusStyle = "background-color: #d1e7dd !important; color: #0f5132 !important;";
+                        } elseif ($item['status'] === 'Pending Verification') {
+                            $statusStyle = "background-color: #ffe6d5 !important; color: #b25e24 !important;";
+                        }
+                        ?>
+                        <span class="badge px-2.5 py-1.5 small text-capitalize" style="border-radius: 20px; font-weight: 500; font-size: 0.75rem; <?php echo $statusStyle; ?> padding-left: 12px !important; padding-right: 12px !important;">
+                            <?php echo htmlspecialchars($item['status']); ?>
+                        </span>
                     </div>
-                    <span class="text-muted small">Posted: <?php echo date('M d, Y', strtotime($item['created_at'])); ?></span>
+                    <div class="text-muted small">Posted: <?php echo date('M d, Y', strtotime($item['created_at'])); ?></div>
                 </div>
 
-                <hr>
-
-                <div class="row mb-4">
-                    <div class="col-md-6 mb-3">
-                        <h6 class="text-muted fw-bold small uppercase"><i class="fa-solid fa-map-marker-alt text-success me-1"></i> Location Found</h6>
-                        <p class="fs-6"><?php echo htmlspecialchars($item['location_found']); ?></p>
+                <!-- Primary Master Title Entry Summary Header Text Section -->
+                <h2 class="fw-bold text-dark mb-4" style="font-size: 2.1rem; letter-spacing: -0.5px;"><?php echo htmlspecialchars($item['title']); ?></h2>
+                <hr class="text-light-subtle mb-4">
+    <!-- Tracking Parameters Coordinate Split Row Panels -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="text-muted small mb-1"><i class="fa-solid fa-map-marker-alt text-danger me-1"></i> Location Found</div>
+                        <div class="text-dark fs-6" style="font-weight: 500;"><?php echo htmlspecialchars($item['location']); ?></div>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <h6 class="text-muted fw-bold small uppercase"><i class="fa-solid fa-calendar text-primary me-1"></i> Date Found</h6>
-                        <p class="fs-6"><?php echo htmlspecialchars($item['date_found']); ?></p>
+                    <div class="col-md-6">
+                        <div class="text-muted small mb-1"><i class="fa-solid fa-calendar text-primary me-1"></i> Date Found</div>
+                        <div class="text-dark fs-6" style="font-weight: 500;"><?php echo htmlspecialchars($item['event_date']); ?></div>
                     </div>
                 </div>
 
+                <!-- System Description Details Box Panel Component Area -->
                 <div class="mb-4">
-                    <h5 class="fw-bold mb-2">Item Description</h5>
-                    <div class="p-3 bg-light rounded">
-                        <p class="mb-0"><?php echo nl2br(htmlspecialchars($item['description'])); ?></p>
+                    <h5 class="fw-bold text-dark mb-3" style="font-size: 1.15rem;">Item Description</h5>
+                    <div class="p-3 border border-light-subtle rounded text-dark" style="background-color: #bce5db; line-height: 1.6; font-size: 0.95rem;">
+                        <?php echo nl2br(htmlspecialchars($item['description'])); ?>
                     </div>
                 </div>
 
-                <div class="card bg-light border-0 p-3 mb-4">
-                    <h6 class="fw-bold mb-2"><i class="fa-solid fa-user-circle me-1"></i> Finder / Reporter Contact</h6>
-                    <p class="mb-1"><strong>Name:</strong> <?php echo htmlspecialchars($item['full_name']); ?></p>
-                    <p class="mb-1"><strong>Email:</strong> <?php echo htmlspecialchars($item['email']); ?></p>
-                    <p class="mb-0"><strong>Phone:</strong> <?php echo htmlspecialchars($item['phone'] ?? 'Not provided'); ?></p>
+                <!-- Finder Contact Credentials Summary Panel -->
+                <div class="p-4 mb-4 border border-light-subtle rounded" style="background-color: #bce5db; border-radius: 8px;">
+                    <h6 class="fw-bold text-dark mb-3 d-flex align-items-center"><i class="fa-solid fa-user-check me-2 text-secondary"></i> Finder / Reporter Contact</h6>
+                    <div class="text-dark mb-1.5" style="font-size: 0.95rem;"><strong>Name:</strong> <?php echo htmlspecialchars($item['finder_name']); ?></div>
+                    <div class="text-dark mb-1.5" style="font-size: 0.95rem;"><strong>Email:</strong> <?php echo htmlspecialchars($item['email']); ?></div>
+                    <div class="text-dark mb-0" style="font-size: 0.95rem;"><strong>Phone:</strong> <?php echo htmlspecialchars($item['phone'] ?? 'Not provided'); ?></div>
                 </div>
 
-                <!-- Claim Form / Section -->
-                <?php if ($item['status'] === 'Claimed'): ?>
-                    <div class="alert alert-secondary text-center">
-                        <i class="fa-solid fa-lock me-1"></i> This item has already been successfully claimed and returned.
-                    </div>
-                <?php elseif (!isLoggedIn()): ?>
-                    <div class="alert alert-warning text-center">
-                        <i class="fa-solid fa-info-circle me-1"></i> Please <a href="login.php" class="fw-bold">Login</a> to file a claim for this found item.
-                    </div>
-                <?php else: ?>
-                    <div class="card border-success p-3">
-                        <h5 class="fw-bold text-success mb-3"><i class="fa-solid fa-handshake me-1"></i> Claim This Item</h5>
-                        <form method="POST" action="found_detail.php?id=<?php echo $item['id']; ?>">
-                            <div class="mb-3">
-                                <label for="proof_description" class="form-label fw-bold">Verification Details & Proof *</label>
-                                <textarea class="form-control" id="proof_description" name="proof_description" rows="3" required placeholder="Describe unique identifying marks, contents, serial numbers, or details that prove ownership..."></textarea>
-                                <div class="form-text">Your claim will be verified by community staff before approval.</div>
-                            </div>
-                            <button type="submit" class="btn btn-success fw-bold"><i class="fa-solid fa-paper-plane me-1"></i> Submit Claim Verification</button>
-                        </form>
+                <!-- Conditional Status Actions Panel Area Block -->
+                <?php if ($item['status'] === 'Claimed' || $item['status'] === 'Closed' || $item['status'] === 'Pending Verification'): ?>
+                    <!-- FIXED: Greyed-out layout block explicitly emphasizing that claims are locked out -->
+                    <div class="alert border-0 text-secondary p-3 d-flex align-items-center justify-content-center mb-4 small" style="border-radius: 8px; font-weight: 500; background-color: #e2e3e5 !important; color: #41464b !important;">
+                        <i class="fa-solid fa-lock me-2 text-secondary"></i> This item is no longer available for claims.
                     </div>
                 <?php endif; ?>
 
-                <!-- Claims list for staff or item poster -->
-                <?php if (!empty($claims)): ?>
-                    <hr class="my-4">
-                    <h5 class="fw-bold mb-3"><i class="fa-solid fa-list-check me-1"></i> Claims Filed for this Item</h5>
-                    <?php foreach ($claims as $claim): ?>
-                        <div class="card bg-light border p-3 mb-3">
-                            <div class="d-flex justify-content-between mb-2">
-                                <strong class="text-primary"><?php echo htmlspecialchars($claim['full_name']); ?> (<?php echo htmlspecialchars($claim['email']); ?>)</strong>
-                                <span class="badge bg-<?php echo $claim['status'] === 'Approved' ? 'success' : ($claim['status'] === 'Rejected' ? 'danger' : 'warning text-dark'); ?>"><?php echo htmlspecialchars($claim['status']); ?></span>
-                            </div>
-                            <p class="mb-1"><strong>Proof:</strong> <?php echo nl2br(htmlspecialchars($claim['proof_description'])); ?></p>
-                            <?php if (!empty($claim['admin_notes'])): ?>
-                                <p class="mb-0 text-muted small"><strong>Admin Notes:</strong> <?php echo htmlspecialchars($claim['admin_notes']); ?></p>
-                            <?php endif; ?>
-                            <?php if (isAdminOrStaff()): ?>
-                                <div class="mt-2">
-                                    <a href="admin/manage_claims.php?action=approve&id=<?php echo $claim['id']; ?>" class="btn btn-success btn-sm"><i class="fa-solid fa-check me-1"></i> Approve</a>
-                                    <a href="admin/manage_claims.php?action=reject&id=<?php echo $claim['id']; ?>" class="btn btn-danger btn-sm"><i class="fa-solid fa-times me-1"></i> Reject</a>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-
-                <div class="mt-4">
-                    <a href="found_items.php" class="btn btn-outline-secondary fw-bold"><i class="fa-solid fa-arrow-left me-1"></i> Back to Found Catalog</a>
+                <!-- Button Navigation Row Section containing your clean action button layouts -->
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-2">
+                    <a href="found_items.php" class="btn btn-outline-secondary bg-white text-dark px-3 py-1.5 font-weight-bold" style="border-radius: 20px; font-size: 0.85rem; border-color: #ced4da;">&larr; Back to Found Catalog</a>
+                    
+                    <?php if ($canEdit): ?>
+                        <a href="edit_found.php?id=<?php echo $id; ?>" class="btn fw-bold px-4 py-1.5 d-inline-flex align-items-center text-dark border-0" style="background-color: #fecba1; border-radius: 20px; font-size: 0.85rem;">
+                            <i class="fa-regular fa-pen-to-square me-1.5 small"></i> Edit Item
+                        </a>
+                    <?php endif; ?>
                 </div>
+
             </div>
         </div>
     </div>

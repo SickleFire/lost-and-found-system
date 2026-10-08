@@ -1,232 +1,122 @@
 <?php
 require_once 'db.php';
-// Fetch summary statistics for the homepage
+
+// 1. Fetch live metrics directly from your unified table structure
 $stats = [
-    'lost' => $pdo->query("SELECT COUNT(*) FROM lost_items")->fetchColumn(),
-    'found' => $pdo->query("SELECT COUNT(*) FROM found_items")->fetchColumn(),
-    'resolved' => $pdo->query("SELECT COUNT(*) FROM lost_items WHERE status='Resolved'")->fetchColumn() + 
-                  $pdo->query("SELECT COUNT(*) FROM found_items WHERE status='Claimed'")->fetchColumn(),
-    'users' => $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn()
+    'lost'     => $pdo->query("SELECT COUNT(*) FROM items WHERE item_type = 'Lost'")->fetchColumn(),
+    'found'    => $pdo->query("SELECT COUNT(*) FROM items WHERE item_type = 'Found'")->fetchColumn(),
+    'returned' => $pdo->query("SELECT COUNT(*) FROM items WHERE status_id = 3")->fetchColumn(), // status_id 3 = Claimed/Resolved
+    'members'  => $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn()
 ];
 
-// Fetch recent lost items
-$recentLost = $pdo->query("SELECT l.*, u.full_name FROM lost_items l JOIN users u ON l.user_id = u.id ORDER BY l.created_at DESC LIMIT 3")->fetchAll();
+// 2. Fetch the 3 most recent lost items joined with categories and statuses
+$recentLost = $pdo->query("SELECT i.*, c.category, s.status FROM items i 
+                           JOIN categories c ON i.category_id = c.category_id 
+                           JOIN i_status s ON i.status_id = s.status_id
+                           WHERE i.item_type = 'Lost' ORDER BY i.created_at DESC LIMIT 3")->fetchAll();
 
-// Fetch recent found items
-$recentFound = $pdo->query("SELECT f.*, u.full_name FROM found_items f JOIN users u ON f.user_id = u.id ORDER BY f.created_at DESC LIMIT 3")->fetchAll();
+// 3. Fetch the 3 most recent found items joined with categories and statuses
+$recentFound = $pdo->query("SELECT i.*, c.category, s.status FROM items i 
+                            JOIN categories c ON i.category_id = c.category_id 
+                            JOIN i_status s ON i.status_id = s.status_id
+                            WHERE i.item_type = 'Found' ORDER BY i.created_at DESC LIMIT 3")->fetchAll();
 
 include 'header.php';
 ?>
 
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap');
-
-:root {
-    --blue-slate: #555b6eff;
-    --muted-teal: #89b0aeff;
-    --frozen-water: #bee3dbff;
-    --bright-snow: #faf9f9ff;
-    --peach-fuzz: #ffd6baff;
-    --ink: #3b3f4d; /* darker shade of blue-slate for body text contrast */
-}
-
-body {
-    background: var(--bright-snow);
-    color: var(--blue-slate);
-    font-family: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
-}
-
-.lf-wrap { max-width: 1040px; margin: 0 auto; padding: 0 1.25rem; }
-
-/* Hero */
-.lf-hero { padding: 5rem 0 3.5rem; }
-.lf-hero h1 {
-    font-size: clamp(2.25rem, 5vw, 3.5rem);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1.1;
-    color: var(--ink);
-    margin: 0 0 1rem;
-    max-width: 16ch;
-}
-.lf-hero p {
-    font-size: 1.125rem;
-    line-height: 1.6;
-    max-width: 52ch;
-    margin: 0 0 2rem;
-}
-.lf-actions { display: flex; flex-wrap: wrap; gap: .75rem; }
-
-/* Buttons */
-.lf-btn {
-    display: inline-block;
-    padding: .7rem 1.4rem;
-    border-radius: 999px;
-    font-weight: 600;
-    font-size: .95rem;
-    text-decoration: none;
-    border: 1.5px solid transparent;
-    transition: background-color .15s, color .15s, border-color .15s;
-}
-.lf-btn:focus-visible { outline: 3px solid var(--muted-teal); outline-offset: 2px; }
-.lf-btn-primary { background: var(--blue-slate); color: var(--bright-snow); }
-.lf-btn-primary:hover { background: var(--ink); color: var(--bright-snow); }
-.lf-btn-accent { background: var(--peach-fuzz); color: var(--ink); }
-.lf-btn-accent:hover { background: #ffc7a0; color: var(--ink); }
-.lf-btn-ghost { border-color: var(--muted-teal); color: var(--blue-slate); background: transparent; }
-.lf-btn-ghost:hover { background: var(--frozen-water); color: var(--ink); }
-
-/* Stats */
-.lf-stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    background: var(--frozen-water);
-    border-radius: 16px;
-    padding: 1.5rem 0;
-    margin-bottom: 4rem;
-}
-.lf-stat { padding: 0 1.5rem; border-left: 1px solid var(--muted-teal); }
-.lf-stat:first-child { border-left: 0; }
-.lf-stat strong { display: block; font-size: 1.9rem; font-weight: 700; color: var(--ink); line-height: 1.2; }
-.lf-stat span { font-size: .9rem; }
-
-/* Sections */
-.lf-section { margin-bottom: 4rem; }
-.lf-section-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 1rem;
-    margin-bottom: 1.25rem;
-}
-.lf-section-head h2 { font-size: 1.4rem; font-weight: 700; color: var(--ink); margin: 0; }
-.lf-link { color: var(--blue-slate); font-weight: 600; font-size: .95rem; text-decoration: underline; text-decoration-color: var(--muted-teal); text-underline-offset: 4px; }
-.lf-link:hover { color: var(--ink); text-decoration-color: var(--peach-fuzz); }
-
-.lf-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
-
-/* Item cards */
-.lf-item {
-    display: flex;
-    flex-direction: column;
-    background: #fff;
-    border: 1px solid var(--frozen-water);
-    border-radius: 14px;
-    padding: 1.4rem;
-}
-.lf-tags { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .9rem; }
-.lf-tag {
-    font-size: .8rem;
-    font-weight: 600;
-    padding: .2rem .65rem;
-    border-radius: 999px;
-    background: var(--frozen-water);
-    color: var(--ink);
-}
-.lf-tag-status { background: var(--peach-fuzz); }
-.lf-item h3 { font-size: 1.1rem; font-weight: 700; color: var(--ink); margin: 0 0 .6rem; }
-.lf-meta { font-size: .875rem; margin: 0 0 .25rem; }
-.lf-meta i { color: var(--muted-teal); width: 1.1rem; }
-.lf-desc {
-    margin: .9rem 0 1.25rem;
-    font-size: .95rem;
-    line-height: 1.55;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-.lf-item .lf-btn { margin-top: auto; text-align: center; }
-
-.lf-empty { padding: 1.5rem; border: 1px dashed var(--muted-teal); border-radius: 14px; }
-
-@media (max-width: 860px) {
-    .lf-grid { grid-template-columns: 1fr; }
-    .lf-stats { grid-template-columns: repeat(2, 1fr); row-gap: 1.25rem; }
-    .lf-stat:nth-child(3) { border-left: 0; }
-    .lf-hero { padding: 3rem 0 2.5rem; }
-}
-</style>
-
-<!-- Hero -->
-<header class="lf-hero">
-    <div class="lf-wrap">
-        <h1>Community Lost &amp; Found</h1>
-        <p>Lost something in the community, or found something that isn't yours? Post it here and help it get back to its owner.</p>
-        <div class="lf-actions">
-            <?php if (isLoggedIn()): ?>
-                <a href="post_lost.php" class="lf-btn lf-btn-primary">Post lost item</a>
-                <a href="post_found.php" class="lf-btn lf-btn-accent">Post found item</a>
+<!-- Hero Banner Layout Block -->
+<div class="py-5 mb-4">
+    <div class="container py-2">
+        <h1 class="display-4 fw-bold mb-3 text-dark">Community Lost & Found</h1>
+        <p class="fs-5 text-muted mb-4">Lost something in the community, or found something that isn't yours?<br>Post it here and help it get back to its owner.</p>
+        <div class="d-flex gap-2">
+            <?php if (!isLoggedIn()): ?>
+                <a href="login.php" class="btn btn-dark fw-bold px-4 py-2" style="border-radius: 8px; background-color: #343a40;">Log in to post</a>
+                <a href="register.php" class="btn btn-outline-dark fw-bold px-4 py-2" style="border-radius: 8px;">Create account</a>
             <?php else: ?>
-                <a href="login.php" class="lf-btn lf-btn-primary">Log in to post</a>
-                <a href="register.php" class="lf-btn lf-btn-accent">Create account</a>
+                <a href="post_lost.php" class="btn btn-primary fw-bold px-4 py-2" style="border-radius: 8px;">Report Lost Item</a>
+                <a href="post_found.php" class="btn btn-success fw-bold px-4 py-2" style="border-radius: 8px;">Report Found Item</a>
             <?php endif; ?>
         </div>
     </div>
-</header>
+</div>
 
-<main class="lf-wrap">
-    <!-- Statistics -->
-    <section class="lf-stats" aria-label="Community statistics">
-        <div class="lf-stat"><strong><?php echo $stats['lost']; ?></strong><span>Lost items</span></div>
-        <div class="lf-stat"><strong><?php echo $stats['found']; ?></strong><span>Found items</span></div>
-        <div class="lf-stat"><strong><?php echo $stats['resolved']; ?></strong><span>Returned to owners</span></div>
-        <div class="lf-stat"><strong><?php echo $stats['users']; ?></strong><span>Members</span></div>
-    </section>
+<!-- Dynamic Counters Section - Fixed Muted Palette Styling -->
+<div class="container mb-5">
+    <div class="row text-center g-3">
+        <?php foreach ([['lost', 'Lost items'], ['found', 'Found items'], ['returned', 'Returned to owners'], ['members', 'Members']] as $item): ?>
+            <div class="col-6 col-md-3">
+                <div class="p-3 rounded h-100 text-start" style="background-color: #bce5db;">
+                    <h2 class="display-5 fw-normal mb-0 text-dark"><?php echo $stats[$item[0]]; ?></h2>
+                    <span class="text-muted small"><?php echo $item[1]; ?></span>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</div>
 
-    <!-- Recent Lost Items -->
-    <section class="lf-section">
-        <div class="lf-section-head">
-            <h2>Recently lost</h2>
-            <a href="lost_items.php" class="lf-link">View all lost items</a>
-        </div>
+<!-- Main Feed Layout Area -->
+<div class="container my-5">
+    
+    <!-- Section A: Recently Lost Panel -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-dark m-0">Recently lost</h3>
+        <a href="lost_items.php" class="text-muted small text-decoration-none">View all lost items</a>
+    </div>
+
+    <div class="row g-4 mb-5">
         <?php if (empty($recentLost)): ?>
-            <p class="lf-empty">No lost items reported yet. If you've lost something, post it so others can help.</p>
+            <div class="col-12"><div class="alert alert-light border text-center text-muted py-4">No open lost item reports at the moment.</div></div>
         <?php else: ?>
-            <div class="lf-grid">
-                <?php foreach ($recentLost as $item): ?>
-                    <article class="lf-item">
-                        <div class="lf-tags">
-                            <span class="lf-tag"><?php echo htmlspecialchars($item['category']); ?></span>
-                            <span class="lf-tag lf-tag-status"><?php echo htmlspecialchars($item['status']); ?></span>
+            <?php foreach ($recentLost as $item): ?>
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm border border-light-subtle" style="border-radius: 12px;">
+                        <div class="card-body p-4 d-flex flex-column">
+                            <div class="d-flex gap-1 mb-3 flex-wrap">
+                                <span class="badge bg-light text-muted border text-uppercase font-monospace px-2.5 py-1 small"><?php echo htmlspecialchars($item['category']); ?></span>
+                                <span class="badge <?php echo ($item['status'] === 'Resolved') ? 'bg-success-subtle text-success-emphasis' : 'bg-warning-subtle text-warning-emphasis'; ?> px-2.5 py-1 small"><?php echo htmlspecialchars($item['status']); ?></span>
+                            </div>
+                            <h5 class="fw-bold text-dark mb-2"><?php echo htmlspecialchars($item['title']); ?></h5>
+                            <div class="text-muted small mb-1"><i class="fa-solid fa-map-marker-alt text-danger me-1"></i> <?php echo htmlspecialchars($item['location']); ?></div>
+                            <div class="text-muted small mb-3"><i class="fa-solid fa-calendar me-1"></i> Lost on <?php echo $item['event_date']; ?></div>
+                            <p class="card-text text-muted mb-4 flex-grow-1" style="font-size: 0.9rem; line-height: 1.5;"><?php echo htmlspecialchars($item['description']); ?></p>
+                            <a href="lost_detail.php?id=<?php echo $item['item_id']; ?>" class="btn btn-outline-secondary w-100 mt-auto py-2" style="border-radius: 20px; font-size: 0.9rem; border-color: #ced4da; color: #495057;">View details</a>
                         </div>
-                        <h3><?php echo htmlspecialchars($item['title']); ?></h3>
-                        <p class="lf-meta"><i class="fa-solid fa-map-marker-alt"></i><?php echo htmlspecialchars($item['location_lost']); ?></p>
-                        <p class="lf-meta"><i class="fa-solid fa-calendar"></i>Lost on <?php echo htmlspecialchars($item['date_lost']); ?></p>
-                        <p class="lf-desc"><?php echo htmlspecialchars($item['description']); ?></p>
-                        <a href="lost_detail.php?id=<?php echo (int)$item['id']; ?>" class="lf-btn lf-btn-ghost">View details</a>
-                    </article>
-                <?php endforeach; ?>
-            </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         <?php endif; ?>
-    </section>
+    </div>
 
-    <!-- Recent Found Items -->
-    <section class="lf-section">
-        <div class="lf-section-head">
-            <h2>Recently found</h2>
-            <a href="found_items.php" class="lf-link">View all found items</a>
-        </div>
+    <!-- Section B: Recently Found Panel -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pt-2">
+        <h3 class="fw-bold text-dark m-0">Recently found</h3>
+        <a href="found_items.php" class="text-muted small text-decoration-none">View all found items</a>
+    </div>
+
+    <div class="row g-4 mb-4">
         <?php if (empty($recentFound)): ?>
-            <p class="lf-empty">No found items reported yet. If you've found something, post it so the owner can claim it.</p>
+            <div class="col-12"><div class="alert alert-light border text-center text-muted py-4">No found items reported recently.</div></div>
         <?php else: ?>
-            <div class="lf-grid">
-                <?php foreach ($recentFound as $item): ?>
-                    <article class="lf-item">
-                        <div class="lf-tags">
-                            <span class="lf-tag"><?php echo htmlspecialchars($item['category']); ?></span>
-                            <span class="lf-tag lf-tag-status"><?php echo htmlspecialchars($item['status']); ?></span>
+            <?php foreach ($recentFound as $item): ?>
+                <div class="col-md-4">
+                    <div class="card h-100 shadow-sm border border-light-subtle" style="border-radius: 12px;">
+                        <div class="card-body p-4 d-flex flex-column">
+                            <div class="d-flex gap-1 mb-3 flex-wrap">
+                                <span class="badge bg-light text-muted border text-uppercase font-monospace px-2.5 py-1 small"><?php echo htmlspecialchars($item['category']); ?></span>
+                                <span class="badge <?php echo ($item['status'] === 'Claimed') ? 'bg-success-subtle text-success-emphasis' : (($item['status'] === 'Pending Verification') ? 'bg-danger-subtle text-danger-emphasis' : 'bg-warning-subtle text-warning-emphasis'); ?> px-2.5 py-1 small"><?php echo htmlspecialchars($item['status']); ?></span>
+                            </div>
+                            <h5 class="fw-bold text-dark mb-2"><?php echo htmlspecialchars($item['title']); ?></h5>
+                            <div class="text-muted small mb-1"><i class="fa-solid fa-map-marker-alt text-success me-1"></i> <?php echo htmlspecialchars($item['location']); ?></div>
+                            <div class="text-muted small mb-3"><i class="fa-solid fa-calendar me-1"></i> Found on <?php echo $item['event_date']; ?></div>
+                            <p class="card-text text-muted mb-4 flex-grow-1" style="font-size: 0.9rem; line-height: 1.5"><?php echo htmlspecialchars($item['description']); ?></p>
+                            <a href="found_detail.php?id=<?php echo $item['item_id']; ?>" class="btn btn-outline-secondary w-100 mt-auto py-2" style="border-radius: 20px; font-size: 0.9rem; border-color: #ced4da; color: #495057;">View details & claim</a>
                         </div>
-                        <h3><?php echo htmlspecialchars($item['title']); ?></h3>
-                        <p class="lf-meta"><i class="fa-solid fa-map-marker-alt"></i><?php echo htmlspecialchars($item['location_found']); ?></p>
-                        <p class="lf-meta"><i class="fa-solid fa-calendar"></i>Found on <?php echo htmlspecialchars($item['date_found']); ?></p>
-                        <p class="lf-desc"><?php echo htmlspecialchars($item['description']); ?></p>
-                        <a href="found_detail.php?id=<?php echo (int)$item['id']; ?>" class="lf-btn lf-btn-ghost">View details &amp; claim</a>
-                    </article>
-                <?php endforeach; ?>
-            </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         <?php endif; ?>
-    </section>
-</main>
+    </div>
+</div>
 
 <?php include 'footer.php'; ?>

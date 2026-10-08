@@ -7,12 +7,13 @@ $success = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $email = trim($_POST['email'] ?? '');
-    $full_name = trim($_POST['full_name'] ?? '');
+    $firstname = trim($_POST['firstname'] ?? '');
+    $lastname = trim($_POST['lastname'] ?? '');
     $phone = trim($_POST['phone'] ?? '');
     $password = $_POST['password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
 
-    if (empty($username) || empty($email) || empty($full_name) || empty($password)) {
+    if (empty($username) || empty($email) || empty($firstname) || empty($lastname) || empty($password)) {
         $error = 'Please fill in all required fields.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Invalid email format.';
@@ -25,15 +26,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (strlen($password) > 20) {
         $error = 'Password must not exceed 20 characters.';
     } else {
-        // Check if username or email already exists
-        $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
+        // Check if username or email already exists (Targeting explicit user_id PK field structural layout)
+        $stmt = $pdo->prepare("SELECT user_id FROM users WHERE username = ? OR email = ?");
         $stmt->execute([$username, $email]);
         if ($stmt->fetch()) {
             $error = 'Username or email is already registered.';
         } else {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare("INSERT INTO users (username, email, password, full_name, phone, role) VALUES (?, ?, ?, ?, ?, 'member')");
-            if ($stmt->execute([$username, $email, $hashed_password, $full_name, $phone])) {
+            // Inserts matching database fields: role_id 3 corresponds to 'member' role configuration
+            $stmt = $pdo->prepare("INSERT INTO users (username, email, passwordhash, firstname, lastname, phone, role_id) VALUES (?, ?, ?, ?, ?, ?, 3)");
+            if ($stmt->execute([$username, $email, $hashed_password, $firstname, $lastname, $phone])) {
                 header("Location: login.php?registered=1");
                 exit;
             } else {
@@ -62,13 +64,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <form method="POST" action="register.php">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="full_name" class="form-label">Full Name *</label>
-                            <input type="text" class="form-control" id="full_name" name="full_name" required value="<?php echo htmlspecialchars($_POST['full_name'] ?? ''); ?>">
+                            <label for="firstname" class="form-label">First Name *</label>
+                            <input type="text" class="form-control" id="firstname" name="firstname" required value="<?php echo htmlspecialchars($_POST['firstname'] ?? ''); ?>">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="username" class="form-label">Username *</label>
-                            <input type="text" class="form-control" id="username" name="username" required value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>">
+                            <label for="lastname" class="form-label">Last Name *</label>
+                            <input type="text" class="form-control" id="lastname" name="lastname" required value="<?php echo htmlspecialchars($_POST['lastname'] ?? ''); ?>">
                         </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username *</label>
+                        <input type="text" class="form-control" id="username" name="username" required value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>">
                     </div>
 
                     <div class="mb-3">

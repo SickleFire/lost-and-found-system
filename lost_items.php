@@ -2,43 +2,47 @@
 require_once 'db.php';
 
 $search = trim($_GET['search'] ?? '');
-$category = trim($_GET['category'] ?? '');
-$status = trim($_GET['status'] ?? '');
+$category_id = intval($_GET['category'] ?? 0);
+$status_id = intval($_GET['status'] ?? 0);
 $sort = trim($_GET['sort'] ?? 'newest');
 
-$query = "SELECT l.*, u.full_name FROM lost_items l JOIN users u ON l.user_id = u.id WHERE 1=1";
+$query = "SELECT i.*, CONCAT(u.firstname, ' ', u.lastname) AS full_name, c.category, s.status 
+          FROM items i 
+          JOIN users u ON i.user_id = u.user_id 
+          JOIN categories c ON i.category_id = c.category_id
+          JOIN i_status s ON i.status_id = s.status_id
+          WHERE i.item_type = 'Lost'";
 $params = [];
 
 if (!empty($search)) {
-    $query .= " AND (l.title LIKE ? OR l.description LIKE ? OR l.location_lost LIKE ? OR u.full_name LIKE ?)";
-    $params[] = "%$search%";
-    $params[] = "%$search%";
-    $params[] = "%$search%";
-    $params[] = "%$search%";
+    $query .= " AND (i.title LIKE ? OR i.description LIKE ? OR i.location LIKE ? OR u.firstname LIKE ? OR u.lastname LIKE ?)";
+    $searchParam = "%$search%";
+    array_push($params, $searchParam, $searchParam, $searchParam, $searchParam, $searchParam);
 }
 
-if (!empty($category)) {
-    $query .= " AND l.category = ?";
-    $params[] = $category;
+if ($category_id > 0) {
+    $query .= " AND i.category_id = ?";
+    $params[] = $category_id;
 }
 
-if (!empty($status)) {
-    $query .= " AND l.status = ?";
-    $params[] = $status;
+if ($status_id > 0) {
+    $query .= " AND i.status_id = ?";
+    $params[] = $status_id;
 }
 
 if ($sort === 'oldest') {
-    $query .= " ORDER BY l.date_lost ASC";
+    $query .= " ORDER BY i.event_date ASC";
 } else {
-    $query .= " ORDER BY l.date_lost DESC";
+    $query .= " ORDER BY i.event_date DESC";
 }
 
 $stmt = $pdo->prepare($query);
 $stmt->execute($params);
 $items = $stmt->fetchAll();
 
-// Fetch distinct categories for filter dropdown
-$categories = $pdo->query("SELECT DISTINCT category FROM lost_items")->fetchAll(PDO::FETCH_COLUMN);
+// Fetch system categories and statuses for filters
+$categories = $pdo->query("SELECT * FROM categories")->fetchAll();
+$statuses = $pdo->query("SELECT * FROM i_status")->fetchAll();
 
 include 'header.php';
 ?>
@@ -66,7 +70,7 @@ include 'header.php';
                 <select class="form-select" id="category" name="category">
                     <option value="">All Categories</option>
                     <?php foreach ($categories as $cat): ?>
-                        <option value="<?php echo htmlspecialchars($cat); ?>" <?php echo $category === $cat ? 'selected' : ''; ?>><?php echo htmlspecialchars($cat); ?></option>
+                        <option value="<?php echo $cat['category_id']; ?>" <?php echo $category_id === intval($cat['category_id']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($cat['category']); ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -74,9 +78,9 @@ include 'header.php';
                 <label for="status" class="form-label fw-bold small">Status</label>
                 <select class="form-select" id="status" name="status">
                     <option value="">All Statuses</option>
-                    <option value="Open" <?php echo $status === 'Open' ? 'selected' : ''; ?>>Open</option>
-                    <option value="Resolved" <?php echo $status === 'Resolved' ? 'selected' : ''; ?>>Resolved</option>
-                    <option value="Closed" <?php echo $status === 'Closed' ? 'selected' : ''; ?>>Closed</option>
+                    <?php foreach ($statuses as $stat): ?>
+                        <option value="<?php echo $stat['status_id']; ?>" <?php echo $status_id === intval($stat['status_id']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($stat['status']); ?></option>
+                    <?php endforeach; ?>
                 </select>
             </div>
             <div class="col-md-2">
@@ -112,13 +116,13 @@ include 'header.php';
                                 <span class="badge bg-<?php echo $item['status'] === 'Open' ? 'warning text-dark' : 'secondary'; ?>"><?php echo htmlspecialchars($item['status']); ?></span>
                             </div>
                             <h5 class="card-title fw-bold"><?php echo htmlspecialchars($item['title']); ?></h5>
-                            <p class="card-text text-muted small mb-2"><i class="fa-solid fa-map-marker-alt me-1 text-danger"></i> <?php echo htmlspecialchars($item['location_lost']); ?></p>
-                            <p class="card-text text-muted small mb-3"><i class="fa-solid fa-calendar me-1 text-primary"></i> Lost Date: <?php echo $item['date_lost']; ?></p>
+                            <p class="card-text text-muted small mb-2"><i class="fa-solid fa-map-marker-alt me-1 text-danger"></i> <?php echo htmlspecialchars($item['location']); ?></p>
+                            <p class="card-text text-muted small mb-3"><i class="fa-solid fa-calendar me-1 text-primary"></i> Lost Date: <?php echo $item['event_date']; ?></p>
                             <p class="card-text"><?php echo nl2br(htmlspecialchars(substr($item['description'], 0, 120))); ?>...</p>
                         </div>
                         <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center pb-3">
                             <small class="text-muted">By: <?php echo htmlspecialchars($item['full_name']); ?></small>
-                            <a href="lost_detail.php?id=<?php echo $item['id']; ?>" class="btn btn-outline-primary btn-sm fw-bold">View Details</a>
+                            <a href="lost_detail.php?id=<?php echo $item['item_id']; ?>" class="btn btn-outline-primary btn-sm fw-bold">View Details</a>
                         </div>
                     </div>
                 </div>

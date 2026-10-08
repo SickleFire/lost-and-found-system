@@ -2,7 +2,12 @@
 require_once 'db.php';
 $id = intval($_GET['id'] ?? 0);
 
-$stmt = $pdo->prepare("SELECT l.*, u.full_name, u.email, u.phone FROM lost_items l JOIN users u ON l.user_id = u.id WHERE l.id = ?");
+$stmt = $pdo->prepare("SELECT i.*, CONCAT(u.firstname, ' ', u.lastname) AS full_name, u.email, u.phone, c.category, s.status 
+                       FROM items i 
+                       JOIN users u ON i.user_id = u.user_id 
+                       JOIN categories c ON i.category_id = c.category_id
+                       JOIN i_status s ON i.status_id = s.status_id
+                       WHERE i.item_id = ? AND i.item_type = 'Lost'");
 $stmt->execute([$id]);
 $item = $stmt->fetch();
 
@@ -39,11 +44,11 @@ include 'header.php';
                 <div class="row mb-4">
                     <div class="col-md-6 mb-3">
                         <h6 class="text-muted fw-bold small uppercase"><i class="fa-solid fa-map-marker-alt text-danger me-1"></i> Location Lost</h6>
-                        <p class="fs-6"><?php echo htmlspecialchars($item['location_lost']); ?></p>
+                        <p class="fs-6"><?php echo htmlspecialchars($item['location']); ?></p>
                     </div>
                     <div class="col-md-6 mb-3">
                         <h6 class="text-muted fw-bold small uppercase"><i class="fa-solid fa-calendar text-primary me-1"></i> Date Lost</h6>
-                        <p class="fs-6"><?php echo htmlspecialchars($item['date_lost']); ?></p>
+                        <p class="fs-6"><?php echo htmlspecialchars($item['event_date']); ?></p>
                     </div>
                 </div>
 
@@ -64,7 +69,7 @@ include 'header.php';
                 <div class="d-flex justify-content-between">
                     <a href="lost_items.php" class="btn btn-outline-secondary fw-bold"><i class="fa-solid fa-arrow-left me-1"></i> Back to Catalog</a>
                     <?php if (isLoggedIn() && ($_SESSION['user_id'] == $item['user_id'] || isAdminOrStaff())): ?>
-                        <a href="edit_lost.php?id=<?php echo $item['id']; ?>" class="btn btn-warning fw-bold"><i class="fa-solid fa-edit me-1"></i> Edit Item</a>
+                        <a href="edit_lost.php?id=<?php echo $item['item_id']; ?>" class="btn btn-warning fw-bold"><i class="fa-solid fa-edit me-1"></i> Edit Item</a>
                     <?php endif; ?>
                 </div>
             </div>

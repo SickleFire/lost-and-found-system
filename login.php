@@ -12,14 +12,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($username) || empty($password)) {
         $error = 'Please fill in all fields.';
     } else {
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? OR email = ?");
+        // Query user and join roles table to get string representation of user's role access level
+        $stmt = $pdo->prepare("SELECT u.*, r.role 
+                               FROM users u 
+                               JOIN roles r ON u.role_id = r.role_id 
+                               WHERE u.username = ? OR u.email = ?");
         $stmt->execute([$username, $username]);
         $user = $stmt->fetch();
 
-        if ($user && password_verify($password, $user['password'])) {
-            $_SESSION['user_id'] = $user['id'];
+        // Target authentic column passwordhash to match input checks
+        if ($user && password_verify($password, $user['passwordhash'])) {
+            $_SESSION['user_id'] = $user['user_id'];
             $_SESSION['username'] = $user['username'];
-            $_SESSION['full_name'] = $user['full_name'];
+            $_SESSION['full_name'] = trim($user['firstname'] . ' ' . $user['lastname']);
             $_SESSION['role'] = $user['role'];
 
             if ($user['role'] === 'admin' || $user['role'] === 'staff') {

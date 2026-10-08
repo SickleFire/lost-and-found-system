@@ -4,18 +4,34 @@ requireLogin();
 
 $user_id = $_SESSION['user_id'];
 
-// Fetch user's lost items
-$myLost = $pdo->prepare("SELECT * FROM lost_items WHERE user_id = ? ORDER BY created_at DESC");
+// 1. Fetch user's reported lost items
+$myLost = $pdo->prepare("SELECT i.*, c.category, s.status 
+                         FROM items i 
+                         JOIN categories c ON i.category_id = c.category_id 
+                         JOIN i_status s ON i.status_id = s.status_id 
+                         WHERE i.user_id = ? AND i.item_type = 'Lost' 
+                         ORDER BY i.created_at DESC");
 $myLost->execute([$user_id]);
 $lostItems = $myLost->fetchAll();
 
-// Fetch user's found items
-$myFound = $pdo->prepare("SELECT * FROM found_items WHERE user_id = ? ORDER BY created_at DESC");
+// 2. Fetch user's reported found items
+$myFound = $pdo->prepare("SELECT i.*, c.category, s.status 
+                          FROM items i 
+                          JOIN categories c ON i.category_id = c.category_id 
+                          JOIN i_status s ON i.status_id = s.status_id 
+                          WHERE i.user_id = ? AND i.item_type = 'Found' 
+                          ORDER BY i.created_at DESC");
 $myFound->execute([$user_id]);
 $foundItems = $myFound->fetchAll();
 
-// Fetch user's claims
-$myClaims = $pdo->prepare("SELECT c.*, f.title as item_title, f.category, f.status as item_status FROM claims c JOIN found_items f ON c.found_item_id = f.id WHERE c.user_id = ? ORDER BY c.created_at DESC");
+// 3. Fetch user's submitted claims
+$myClaims = $pdo->prepare("SELECT c.*, i.title AS item_title, cat.category, cs.status AS claim_status 
+                           FROM claims c 
+                           JOIN items i ON c.item_id = i.item_id 
+                           JOIN categories cat ON i.category_id = cat.category_id 
+                           JOIN c_status cs ON c.status_id = cs.status_id 
+                           WHERE c.claimer_user_id = ? 
+                           ORDER BY c.created_at DESC");
 $myClaims->execute([$user_id]);
 $claims = $myClaims->fetchAll();
 
@@ -32,17 +48,17 @@ include 'header.php';
     <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active fw-bold" id="lost-tab" data-bs-toggle="tab" data-bs-target="#lost-pane" type="button" role="tab">
-                <i class="fa-solid fa-search me-1"></i> My Lost Items (<?php echo count($lostItems); ?>)
+                My Lost Items (<?php echo count($lostItems); ?>)
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link fw-bold" id="found-tab" data-bs-toggle="tab" data-bs-target="#found-pane" type="button" role="tab">
-                <i class="fa-solid fa-bullhorn me-1"></i> My Found Items (<?php echo count($foundItems); ?>)
+                My Found Items (<?php echo count($foundItems); ?>)
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link fw-bold" id="claims-tab" data-bs-toggle="tab" data-bs-target="#claims-pane" type="button" role="tab">
-                <i class="fa-solid fa-handshake me-1"></i> My Claims (<?php echo count($claims); ?>)
+                My Claims (<?php echo count($claims); ?>)
             </button>
         </li>
     </ul>
@@ -53,7 +69,7 @@ include 'header.php';
         <div class="tab-pane fade show active" id="lost-pane" role="tabpanel">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4 class="fw-bold">Items You Reported Lost</h4>
-                <a href="post_lost.php" class="btn btn-primary btn-sm fw-bold"><i class="fa-solid fa-plus me-1"></i> Post Lost Item</a>
+                <a href="post_lost.php" class="btn btn-primary btn-sm fw-bold">Post Lost Item</a>
             </div>
             <?php if (empty($lostItems)): ?>
                 <div class="alert alert-info">You haven't reported any lost items yet.</div>
@@ -73,13 +89,13 @@ include 'header.php';
                         <tbody>
                             <?php foreach ($lostItems as $item): ?>
                                 <tr>
-                                    <td class="fw-bold"><a href="lost_detail.php?id=<?php echo $item['id']; ?>" class="text-decoration-none"><?php echo htmlspecialchars($item['title']); ?></a></td>
+                                    <td class="fw-bold"><a href="lost_detail.php?id=<?php echo $item['item_id']; ?>"><?php echo htmlspecialchars($item['title']); ?></a></td>
                                     <td><span class="badge bg-danger"><?php echo htmlspecialchars($item['category']); ?></span></td>
-                                    <td><?php echo htmlspecialchars($item['location_lost']); ?></td>
-                                    <td><?php echo $item['date_lost']; ?></td>
-                                    <td><span class="badge bg-<?php echo $item['status'] === 'Open' ? 'warning text-dark' : 'secondary'; ?>"><?php echo $item['status']; ?></span></td>
+                                    <td><?php echo htmlspecialchars($item['location']); ?></td>
+                                    <td><?php echo $item['event_date']; ?></td>
+                                    <td><span class="badge bg-secondary"><?php echo htmlspecialchars($item['status']); ?></span></td>
                                     <td>
-                                        <a href="lost_detail.php?id=<?php echo $item['id']; ?>" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-eye"></i></a>
+                                        <a href="lost_detail.php?id=<?php echo $item['item_id']; ?>" class="btn btn-sm btn-outline-primary">View</a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -93,7 +109,7 @@ include 'header.php';
         <div class="tab-pane fade" id="found-pane" role="tabpanel">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4 class="fw-bold">Items You Reported Found</h4>
-                <a href="post_found.php" class="btn btn-success btn-sm fw-bold"><i class="fa-solid fa-plus me-1"></i> Post Found Item</a>
+                <a href="post_found.php" class="btn btn-success btn-sm fw-bold">Post Found Item</a>
             </div>
             <?php if (empty($foundItems)): ?>
                 <div class="alert alert-info">You haven't reported any found items yet.</div>
@@ -113,13 +129,13 @@ include 'header.php';
                         <tbody>
                             <?php foreach ($foundItems as $item): ?>
                                 <tr>
-                                    <td class="fw-bold"><a href="found_detail.php?id=<?php echo $item['id']; ?>" class="text-decoration-none"><?php echo htmlspecialchars($item['title']); ?></a></td>
+                                    <td class="fw-bold"><a href="found_detail.php?id=<?php echo $item['item_id']; ?>"><?php echo htmlspecialchars($item['title']); ?></a></td>
                                     <td><span class="badge bg-success"><?php echo htmlspecialchars($item['category']); ?></span></td>
-                                    <td><?php echo htmlspecialchars($item['location_found']); ?></td>
-                                    <td><?php echo $item['date_found']; ?></td>
-                                    <td><span class="badge bg-<?php echo $item['status'] === 'Unclaimed' ? 'primary' : ($item['status'] === 'Pending Verification' ? 'warning text-dark' : 'secondary'); ?>"><?php echo $item['status']; ?></span></td>
+                                    <td><?php echo htmlspecialchars($item['location']); ?></td>
+                                    <td><?php echo $item['event_date']; ?></td>
+                                    <td><span class="badge bg-secondary"><?php echo htmlspecialchars($item['status']); ?></span></td>
                                     <td>
-                                        <a href="found_detail.php?id=<?php echo $item['id']; ?>" class="btn btn-sm btn-outline-success"><i class="fa-solid fa-eye"></i></a>
+                                        <a href="found_detail.php?id=<?php echo $item['item_id']; ?>" class="btn btn-sm btn-outline-success">View</a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -143,22 +159,33 @@ include 'header.php';
                             <tr>
                                 <th>Item Title</th>
                                 <th>Category</th>
-                                <th>Proof / Description</th>
+                                <th>Proof Description</th>
                                 <th>Claim Status</th>
                                 <th>Admin Notes</th>
-                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($claims as $claim): ?>
                                 <tr>
-                                    <td class="fw-bold"><a href="found_detail.php?id=<?php echo $claim['found_item_id']; ?>" class="text-decoration-none"><?php echo htmlspecialchars($claim['item_title']); ?></a></td>
-                                    <td><span class="badge bg-success"><?php echo htmlspecialchars($claim['category']); ?></span></td>
-                                    <td><?php echo htmlspecialchars(substr($claim['proof_description'], 0, 50)); ?>...</td>
-                                    <td><span class="badge bg-<?php echo $claim['status'] === 'Approved' ? 'success' : ($claim['status'] === 'Rejected' ? 'danger' : 'warning text-dark'); ?>"><?php echo $claim['status']; ?></span></td>
-                                    <td><?php echo htmlspecialchars($claim['admin_notes'] ?? 'None'); ?></td>
+                                    <td class="fw-bold">
+                                        <a href="found_detail.php?id=<?php echo $claim['item_id']; ?>">
+                                            <?php echo htmlspecialchars($claim['item_title']); ?>
+                                        </a>
+                                    </td>
                                     <td>
-                                        <a href="found_detail.php?id=<?php echo $claim['found_item_id']; ?>" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-eye"></i></a>
+                                        <span class="badge bg-success"><?php echo htmlspecialchars($claim['category']); ?></span>
+                                    </td>
+                                    <td>
+                                        <?php echo htmlspecialchars(substr($claim['proof_description'], 0, 50)); ?>...
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-warning text-dark">
+                                            <?php echo htmlspecialchars($claim['claim_status']); ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <?php echo htmlspecialchars($claim['admin_notes'] ?? 'None'); ?>
+<a href="found_detail.php?id=<?php echo $claim['found_item_id']; ?>" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-eye"></i></a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

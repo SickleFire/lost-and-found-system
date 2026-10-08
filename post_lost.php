@@ -5,16 +5,16 @@ requireLogin();
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = trim($_POST['title'] ?? '');
-    $category = trim($_POST['category'] ?? '');
+    $category_id = intval($_POST['category_id'] ?? 0);
     $description = trim($_POST['description'] ?? '');
-    $location_lost = trim($_POST['location_lost'] ?? '');
-    $date_lost = $_POST['date_lost'] ?? '';
+    $location = trim($_POST['location'] ?? '');
+    $event_date = $_POST['event_date'] ?? '';
 
-    if (empty($title) || empty($category) || empty($description) || empty($location_lost) || empty($date_lost)) {
+    if (empty($title) || $category_id <= 0 || empty($description) || empty($location) || empty($event_date)) {
         $error = 'Please fill in all required fields.';
     } else {
-        $stmt = $pdo->prepare("INSERT INTO lost_items (user_id, title, category, description, location_lost, date_lost, status) VALUES (?, ?, ?, ?, ?, ?, 'Open')");
-        if ($stmt->execute([$_SESSION['user_id'], $title, $category, $description, $location_lost, $date_lost])) {
+        $stmt = $pdo->prepare("INSERT INTO items (user_id, status_id, item_type, category_id, title, description, location, event_date) VALUES (?, 1, 'Lost', ?, ?, ?, ?, ?)");
+        if ($stmt->execute([$_SESSION['user_id'], $category_id, $title, $description, $location, $event_date])) {
             header("Location: lost_items.php");
             exit;
         } else {
@@ -22,6 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+// Fetch categories for input lookup dropdown
+$categories = $pdo->query("SELECT * FROM categories ORDER BY category ASC")->fetchAll();
 
 include 'header.php';
 ?>
@@ -43,33 +46,28 @@ include 'header.php';
                 <form method="POST" action="post_lost.php">
                     <div class="mb-3">
                         <label for="title" class="form-label fw-bold">Item Title *</label>
-                        <input type="text" class="form-control" id="title" name="title" required placeholder="e.g. iPhone 13 Pro, Brown Leather Wallet" value="<?php echo htmlspecialchars($_POST['title'] ?? ''); ?>">
+                        <input type="text" class="form-control" id="title" name="title" required placeholder="e.g. iPhone 13 Pro (Space Gray)" value="<?php echo htmlspecialchars($_POST['title'] ?? ''); ?>">
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="category" class="form-label fw-bold">Category *</label>
-                            <select class="form-select" id="category" name="category" required>
+                            <label for="category_id" class="form-label fw-bold">Category *</label>
+                            <select class="form-select" id="category_id" name="category_id" required>
                                 <option value="">Select Category</option>
-                                <option value="Electronics">Electronics</option>
-                                <option value="Accessories">Accessories</option>
-                                <option value="Documents / ID">Documents / ID</option>
-                                <option value="Keys">Keys</option>
-                                <option value="Clothing">Clothing</option>
-                                <option value="Pets">Pets</option>
-                                <option value="Bags / Luggage">Bags / Luggage</option>
-                                <option value="Other">Other</option>
+                                <?php foreach ($categories as $cat): ?>
+                                    <option value="<?php echo $cat['category_id']; ?>" <?php echo (intval($_POST['category_id'] ?? 0) === intval($cat['category_id'])) ? 'selected' : ''; ?>><?php echo htmlspecialchars($cat['category']); ?></option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="date_lost" class="form-label fw-bold">Date Lost *</label>
-                            <input type="date" class="form-control" id="date_lost" name="date_lost" required value="<?php echo htmlspecialchars($_POST['date_lost'] ?? date('Y-m-d')); ?>">
+                            <label for="event_date" class="form-label fw-bold">Date Lost *</label>
+                            <input type="date" class="form-control" id="event_date" name="event_date" required value="<?php echo htmlspecialchars($_POST['event_date'] ?? date('Y-m-d')); ?>">
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label for="location_lost" class="form-label fw-bold">Location Lost *</label>
-                        <input type="text" class="form-control" id="location_lost" name="location_lost" required placeholder="e.g. Central Park near fountain, Main Street Cafe" value="<?php echo htmlspecialchars($_POST['location_lost'] ?? ''); ?>">
+                        <label for="location" class="form-label fw-bold">Location Lost *</label>
+                        <input type="text" class="form-control" id="location" name="location" required placeholder="e.g. Central Community Park, near fountain" value="<?php echo htmlspecialchars($_POST['location'] ?? ''); ?>">
                     </div>
 
                     <div class="mb-4">
