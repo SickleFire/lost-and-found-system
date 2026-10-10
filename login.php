@@ -82,12 +82,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <hr class="my-4">
                 <div class="text-center">
                     <p class="text-muted mb-0">Don't have an account? <a href="register.php" class="text-decoration-none fw-bold">Register here</a></p>
-                    <div class="mt-3 p-2 bg-light rounded text-start small text-muted">
-                        <strong>Demo Accounts:</strong><br>
-                        Admin: <code>admin</code> / <code>password</code><br>
-                        Staff: <code>staff_sarah</code> / <code>password</code><br>
-                        Member: <code>john_doe</code> / <code>password</code>
-                    </div>
                 </div>
             </div>
         </div>
