@@ -48,9 +48,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($error)) {
     if (empty($proof_description)) {
         $error = "Please provide detailed ownership proof (serial number, distinctive marks, contents, etc.).";
     } else {
-        // Insert claim record (status_id 1 = Pending Verification)
+        // Insert claim record (c_status id 1 = Pending in c_status table)
         $stmtInsert = $pdo->prepare("INSERT INTO claims (item_id, claimer_user_id, proof_description, status_id, created_at) VALUES (?, ?, ?, 1, NOW())");
-        if ($stmtInsert->execute([$item_id, $user_id])) {
+        if ($stmtInsert->execute([$item_id, $user_id, $proof_description])) {
             // Update item status to Pending Verification (status_id 2)
             $stmtUpdateItem = $pdo->prepare("UPDATE items SET status_id = 2 WHERE item_id = ?");
             $stmtUpdateItem->execute([$item_id]);
