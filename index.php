@@ -91,7 +91,7 @@ include 'header.php';
                             <div class="home-item-location small mb-1"><i class="fa-solid fa-map-marker-alt me-1"></i> <?php echo htmlspecialchars($item['location']); ?></div>
                             <div class="home-item-date small mb-3"><i class="fa-solid fa-calendar me-1"></i> Lost on <?php echo $item['event_date']; ?></div>
                             <p class="card-text home-item-description mb-4 flex-grow-1" style="font-size: 0.9rem; line-height: 1.5;"><?php echo htmlspecialchars($item['description']); ?></p>
-                            <a href="lost_detail.php?id=<?php echo $item['item_id']; ?>" class="btn btn-outline-secondary w-100 mt-auto py-2" style="border-radius: 20px; font-size: 0.9rem; border-color: #ced4da; color: #495057;">View details</a>
+                            <a href="lost_detail.php?id=<?php echo $item['item_id']; ?>" class="btn btn-outline-success w-100 mt-auto py-2" style="border-radius: 20px; font-size: 0.9rem;">View details</a>
                         </div>
                     </div>
                 </div>
@@ -126,7 +126,7 @@ include 'header.php';
                             <div class="home-item-location small mb-1"><i class="fa-solid fa-map-marker-alt me-1"></i> <?php echo htmlspecialchars($item['location']); ?></div>
                             <div class="home-item-date small mb-3"><i class="fa-solid fa-calendar me-1"></i> Found on <?php echo $item['event_date']; ?></div>
                             <p class="card-text home-item-description mb-4 flex-grow-1" style="font-size: 0.9rem; line-height: 1.5"><?php echo htmlspecialchars($item['description']); ?></p>
-                            <a href="found_detail.php?id=<?php echo $item['item_id']; ?>" class="btn btn-outline-secondary w-100 mt-auto py-2" style="border-radius: 20px; font-size: 0.9rem; border-color: #ced4da; color: #495057;">View details & claim</a>
+                            <a href="found_detail.php?id=<?php echo $item['item_id']; ?>" class="btn btn-outline-success w-100 mt-auto py-2" style="border-radius: 20px; font-size: 0.9rem;">View details & claim</a>
                         </div>
                     </div>
                 </div>
