@@ -67,7 +67,7 @@ include 'header.php';
                 </div>
 
                 <div class="d-flex justify-content-between">
-                    <a href="lost_items.php" class="btn btn-outline-secondary fw-bold"><i class="fa-solid fa-arrow-left me-1"></i> Back to Catalog</a>
+                    <a href="lost_items.php" class="btn btn-outline-success fw-bold"><i class="fa-solid fa-arrow-left me-1"></i> Back to Catalog</a>
                     <div class="d-flex gap-2">
                         <?php if (isLoggedIn()): ?>
                             <a href="edit_found.php?lost_item_id=<?php echo $item['item_id']; ?>" class="btn btn-success fw-bold"><i class="fa-solid fa-box-open me-1"></i> Report Found Item</a>

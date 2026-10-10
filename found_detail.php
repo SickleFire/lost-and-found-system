@@ -125,7 +125,7 @@ include 'header.php';
 
                 <!-- Button Navigation Row Section containing your clean action button layouts -->
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-2">
-                    <a href="found_items.php" class="btn btn-outline-secondary bg-white text-dark px-3 py-1.5 font-weight-bold" style="border-radius: 20px; font-size: 0.85rem; border-color: #ced4da;">&larr; Back to Found Catalog</a>
+                    <a href="found_items.php" class="btn btn-outline-success px-3 py-1.5 fw-bold" style="border-radius: 20px; font-size: 0.85rem;">&larr; Back to Found Catalog</a>
                     
                     <div class="d-flex align-items-center gap-2">
                         <?php if (isLoggedIn()): ?>
