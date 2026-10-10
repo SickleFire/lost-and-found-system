@@ -121,7 +121,7 @@ include 'header.php';
                     <div class="d-flex align-items-center gap-2">
                         <?php if (isLoggedIn()): ?>
                             <?php if ($_SESSION['user_id'] != $item['user_id'] && $isClaimable): ?>
-                                <a href="claim_item.php?item_id=<?php echo $id; ?>" class="btn btn-success fw-bold px-4 py-1.5 d-inline-flex align-items-center" style="border-radius: 20px; font-size: 0.85rem; background-color: #198754; border: none;">
+                                <a href="claim_item.php?item_id=<?php echo $id; ?>" class="btn btn-success fw-bold px-4 py-1.5 d-inline-flex align-items-center" style="border-radius: 20px; font-size: 0.85rem;">
                                     <i class="fa-solid fa-handshake me-1.5 small"></i> Claim This Item
                                 </a>
                             <?php elseif ($_SESSION['user_id'] == $item['user_id']): ?>
