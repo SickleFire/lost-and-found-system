@@ -127,7 +127,7 @@ include 'header.php';
                         </div>
                         <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center pb-3">
                             <small class="text-muted">By: <?php echo htmlspecialchars($item['full_name']); ?></small>
-                            <a href="lost_detail.php?id=<?php echo $item['item_id']; ?>" class="btn btn-outline-primary btn-sm fw-bold">View Details</a>
+                            <a href="lost_detail.php?id=<?php echo $item['item_id']; ?>" class="btn btn-outline-success btn-sm fw-bold">View Details</a>
                         </div>
                     </div>
                 </div>
