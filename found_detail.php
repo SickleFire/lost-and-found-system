@@ -76,7 +76,8 @@ include 'header.php';
                 <!-- Primary Master Title Entry Summary Header Text Section -->
                 <h2 class="fw-bold text-dark mb-4" style="font-size: 2.1rem; letter-spacing: -0.5px;"><?php echo htmlspecialchars($item['title']); ?></h2>
                 <hr class="text-light-subtle mb-4">
-    <!-- Tracking Parameters Coordinate Split Row Panels -->
+                
+                <!-- Tracking Parameters Coordinate Split Row Panels -->
                 <div class="row g-4 mb-4">
                     <div class="col-md-6">
                         <div class="text-muted small mb-1"><i class="fa-solid fa-map-marker-alt text-danger me-1"></i> Location Found</div>
@@ -116,11 +117,25 @@ include 'header.php';
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-2">
                     <a href="found_items.php" class="btn btn-outline-secondary bg-white text-dark px-3 py-1.5 font-weight-bold" style="border-radius: 20px; font-size: 0.85rem; border-color: #ced4da;">&larr; Back to Found Catalog</a>
                     
-                    <?php if ($canEdit): ?>
-                        <a href="edit_found.php?id=<?php echo $id; ?>" class="btn fw-bold px-4 py-1.5 d-inline-flex align-items-center text-dark border-0" style="background-color: #fecba1; border-radius: 20px; font-size: 0.85rem;">
-                            <i class="fa-regular fa-pen-to-square me-1.5 small"></i> Edit Item
-                        </a>
-                    <?php endif; ?>
+                    <div class="d-flex align-items-center gap-2">
+                        <?php if (isLoggedIn()): ?>
+                            <?php if ($_SESSION['user_id'] != $item['user_id'] && $item['status_id'] == 1): ?>
+                                <a href="claim_item.php?item_id=<?php echo $id; ?>" class="btn btn-success fw-bold px-4 py-1.5 d-inline-flex align-items-center" style="border-radius: 20px; font-size: 0.85rem; background-color: #198754; border: none;">
+                                    <i class="fa-solid fa-handshake me-1.5 small"></i> Claim This Item
+                                </a>
+                            <?php elseif ($_SESSION['user_id'] == $item['user_id']): ?>
+                                <span class="text-muted small italic me-2">This is an item you reported found.</span>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            <a href="login.php" class="btn btn-outline-success px-3 py-1.5 fw-bold" style="border-radius: 20px; font-size: 0.85rem;">Log in to Claim</a>
+                        <?php endif; ?>
+
+                        <?php if ($canEdit): ?>
+                            <a href="edit_found.php?id=<?php echo $id; ?>" class="btn fw-bold px-4 py-1.5 d-inline-flex align-items-center text-dark border-0" style="background-color: #fecba1; border-radius: 20px; font-size: 0.85rem;">
+                                <i class="fa-regular fa-pen-to-square me-1.5 small"></i> Edit Item
+                            </a>
+                        <?php endif; ?>
+                    </div>
                 </div>
 
             </div>
