@@ -91,7 +91,7 @@ include 'header.php';
                 </select>
             </div>
             <div class="col-md-1 d-flex align-items-end">
-                <button type="submit" class="btn btn-dark w-100 fw-bold"><i class="fa-solid fa-filter"></i></button>
+                <button type="submit" class="btn btn-dark w-100 fw-bold"><i class="fa-solid fa-magnifying-glass me-1"></i>Search</button>
             </div>
         </form>
     </div>
@@ -108,16 +108,21 @@ include 'header.php';
             </div>
         <?php else: ?>
             <?php foreach ($items as $item): ?>
+                <?php
+                $statusClass = in_array($item['status'], ['Closed', 'Claimed', 'Resolved'], true)
+                    ? 'item-status-closed'
+                    : ($item['status'] === 'Open' ? 'item-status-open' : 'item-status-pending');
+                ?>
                 <div class="col-md-4 mb-4">
                     <div class="card h-100 shadow-sm">
                         <div class="card-body">
                             <div class="d-flex justify-content-between mb-2">
-                                <span class="badge bg-danger"><?php echo htmlspecialchars($item['category']); ?></span>
-                                <span class="badge bg-<?php echo $item['status'] === 'Open' ? 'warning text-dark' : 'secondary'; ?>"><?php echo htmlspecialchars($item['status']); ?></span>
+                                <span class="badge item-category"><?php echo htmlspecialchars($item['category']); ?></span>
+                                <span class="badge <?php echo $statusClass; ?>"><?php echo htmlspecialchars($item['status']); ?></span>
                             </div>
                             <h5 class="card-title fw-bold"><?php echo htmlspecialchars($item['title']); ?></h5>
-                            <p class="card-text text-muted small mb-2"><i class="fa-solid fa-map-marker-alt me-1 text-danger"></i> <?php echo htmlspecialchars($item['location']); ?></p>
-                            <p class="card-text text-muted small mb-3"><i class="fa-solid fa-calendar me-1 text-primary"></i> Lost Date: <?php echo $item['event_date']; ?></p>
+                            <p class="card-text item-location small mb-2"><i class="fa-solid fa-map-marker-alt me-1"></i> <?php echo htmlspecialchars($item['location']); ?></p>
+                            <p class="card-text item-date small mb-3"><i class="fa-solid fa-calendar me-1"></i> Lost Date: <?php echo $item['event_date']; ?></p>
                             <p class="card-text"><?php echo nl2br(htmlspecialchars(substr($item['description'], 0, 120))); ?>...</p>
                         </div>
                         <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center pb-3">
