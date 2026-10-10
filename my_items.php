@@ -45,7 +45,7 @@ include 'header.php';
     </div>
 
     <!-- Nav tabs -->
-    <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+    <ul class="nav nav-tabs my-dashboard-tabs mb-4" id="myTab" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active fw-bold" id="lost-tab" data-bs-toggle="tab" data-bs-target="#lost-pane" type="button" role="tab">
                 My Lost Items (<?php echo count($lostItems); ?>)

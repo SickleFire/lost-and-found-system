@@ -232,6 +232,49 @@ $root_prefix = $is_admin_subfolder ? '../' : '';
             color: var(--ink);
             border-bottom: 3px solid var(--teal);
         }
+        .my-dashboard-tabs {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: .35rem;
+            width: fit-content;
+            max-width: 100%;
+            overflow-x: auto;
+            padding: .4rem;
+            border: 1px solid rgba(227, 232, 236, 0.85);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.62);
+            box-shadow: 0 8px 24px rgba(27, 36, 48, 0.06);
+            -webkit-backdrop-filter: blur(14px);
+            backdrop-filter: blur(14px);
+        }
+        .my-dashboard-tabs .nav-link {
+            flex: 0 0 auto;
+            border: 1px solid transparent;
+            border-radius: 11px;
+            padding: .65rem 1rem;
+            white-space: nowrap;
+            transition: background-color .18s ease, color .18s ease, box-shadow .18s ease;
+        }
+        .my-dashboard-tabs .nav-link:hover,
+        .my-dashboard-tabs .nav-link:focus-visible {
+            background: rgba(238, 241, 244, 0.75);
+            color: var(--ink);
+        }
+        .my-dashboard-tabs .nav-link.active {
+            border: 1px solid rgba(197, 230, 224, 0.95);
+            background: rgba(227, 244, 241, 0.82);
+            color: var(--stat-green-text);
+            box-shadow: 0 3px 10px rgba(15, 118, 110, 0.1), inset 0 1px rgba(255, 255, 255, 0.8);
+        }
+        @media (max-width: 575.98px) {
+            .my-dashboard-tabs {
+                width: 100%;
+            }
+            .my-dashboard-tabs .nav-link {
+                padding: .6rem .8rem;
+                font-size: .9rem;
+            }
+        }
 
         /* Tables */
         .table {

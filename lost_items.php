@@ -61,7 +61,7 @@ include 'header.php';
     <!-- Search, Filter & Sort Form -->
     <div class="card p-4 mb-4 shadow-sm bg-light">
         <form method="GET" action="lost_items.php" class="row g-3">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label for="search" class="form-label fw-bold small">Search Keyword</label>
                 <input type="text" class="form-control" id="search" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Item name, reporter, location...">
             </div>
@@ -90,7 +90,7 @@ include 'header.php';
                     <option value="oldest" <?php echo $sort === 'oldest' ? 'selected' : ''; ?>>Oldest First</option>
                 </select>
             </div>
-            <div class="col-md-1 d-flex align-items-end">
+            <div class="col-md-2 d-flex align-items-end">
                 <button type="submit" class="btn btn-dark w-100 fw-bold"><i class="fa-solid fa-magnifying-glass me-1"></i>Search</button>
             </div>
         </form>
