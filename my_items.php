@@ -161,7 +161,6 @@ include 'header.php';
                                 <th>Category</th>
                                 <th>Proof Description</th>
                                 <th>Claim Status</th>
-                                <th>Admin Notes</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -182,10 +181,6 @@ include 'header.php';
                                         <span class="badge bg-warning text-dark">
                                             <?php echo htmlspecialchars($claim['claim_status']); ?>
                                         </span>
-                                    </td>
-                                    <td>
-                                        <?php echo htmlspecialchars($claim['admin_notes'] ?? 'None'); ?>
-<a href="found_detail.php?id=<?php echo $claim['found_item_id']; ?>" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-eye"></i></a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
