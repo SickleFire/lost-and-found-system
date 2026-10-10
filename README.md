@@ -60,6 +60,14 @@ The database `lost_and_found_db` consists of 4 tightly integrated relational tab
    - Start Apache and MySQL in XAMPP Control Panel.
    - Open **phpMyAdmin** (`http://localhost/phpmyadmin/`).
    - Import the provided `database.sql` file, or create a database named `lost_and_found_db` and run the SQL script.
+   - If upgrading an existing database, run this once to add found-to-lost links:
+     ```sql
+     ALTER TABLE items
+       ADD COLUMN related_lost_item_id INT DEFAULT NULL AFTER item_type,
+       ADD CONSTRAINT fk_found_lost_item FOREIGN KEY (related_lost_item_id)
+         REFERENCES items (item_id) ON DELETE SET NULL,
+       ADD INDEX idx_related_lost_item_id (related_lost_item_id);
+     ```
 3. **Project Placement**:
    - Place the project folder (e.g. `lost-and-found-system`) inside your web server root directory (`htdocs` in XAMPP).
 4. **Access the System**:

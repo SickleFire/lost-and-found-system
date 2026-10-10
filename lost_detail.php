@@ -68,9 +68,16 @@ include 'header.php';
 
                 <div class="d-flex justify-content-between">
                     <a href="lost_items.php" class="btn btn-outline-secondary fw-bold"><i class="fa-solid fa-arrow-left me-1"></i> Back to Catalog</a>
-                    <?php if (isLoggedIn() && ($_SESSION['user_id'] == $item['user_id'] || isAdminOrStaff())): ?>
-                        <a href="edit_lost.php?id=<?php echo $item['item_id']; ?>" class="btn btn-warning fw-bold"><i class="fa-solid fa-edit me-1"></i> Edit Item</a>
-                    <?php endif; ?>
+                    <div class="d-flex gap-2">
+                        <?php if (isLoggedIn()): ?>
+                            <a href="edit_found.php?lost_item_id=<?php echo $item['item_id']; ?>" class="btn btn-success fw-bold"><i class="fa-solid fa-box-open me-1"></i> Report Found Item</a>
+                            <?php if ($_SESSION['user_id'] == $item['user_id'] || isAdminOrStaff()): ?>
+                                <a href="edit_lost.php?id=<?php echo $item['item_id']; ?>" class="btn btn-warning fw-bold"><i class="fa-solid fa-edit me-1"></i> Edit Item</a>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            <a href="login.php" class="btn btn-success fw-bold"><i class="fa-solid fa-box-open me-1"></i> Log in to Report Found Item</a>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
         </div>

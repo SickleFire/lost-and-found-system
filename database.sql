@@ -43,6 +43,7 @@ CREATE TABLE `items` (
   `user_id` INT NOT NULL,
   `status_id` INT NOT NULL DEFAULT 1,
   `item_type` ENUM('Lost', 'Found') NOT NULL,
+  `related_lost_item_id` INT DEFAULT NULL,
   `category_id` INT NOT NULL,
   `title` VARCHAR(150) NOT NULL,
   `description` TEXT NOT NULL,
@@ -53,6 +54,8 @@ CREATE TABLE `items` (
   CONSTRAINT `fk_item_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
   CONSTRAINT `fk_item_status` FOREIGN KEY (`status_id`) REFERENCES `i_status` (`status_id`) ON DELETE RESTRICT,
   CONSTRAINT `fk_item_category` FOREIGN KEY (`category_id`) REFERENCES `categories` (`category_id`) ON DELETE RESTRICT,
+  CONSTRAINT `fk_found_lost_item` FOREIGN KEY (`related_lost_item_id`) REFERENCES `items` (`item_id`) ON DELETE SET NULL,
+  INDEX `idx_related_lost_item_id` (`related_lost_item_id`),
   INDEX `idx_item_type` (`item_type`)
 );
 

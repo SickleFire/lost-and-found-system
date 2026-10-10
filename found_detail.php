@@ -4,11 +4,13 @@ require_once 'db.php';
 $id = intval($_GET['id'] ?? 0);
 
 // Fetch item details utilizing centralized items table structure metrics
-$stmt = $pdo->prepare("SELECT i.*, c.category, s.status, CONCAT(u.firstname, ' ', u.lastname) AS finder_name, u.email, u.phone 
+$stmt = $pdo->prepare("SELECT i.*, c.category, s.status, CONCAT(u.firstname, ' ', u.lastname) AS finder_name, u.email, u.phone,
+                              lost.item_id AS linked_lost_item_id, lost.title AS linked_lost_title
                        FROM items i 
                        JOIN users u ON i.user_id = u.user_id 
                        JOIN categories c ON i.category_id = c.category_id 
                        JOIN i_status s ON i.status_id = s.status_id 
+                       LEFT JOIN items lost ON i.related_lost_item_id = lost.item_id AND lost.item_type = 'Lost'
                        WHERE i.item_id = ? AND i.item_type = 'Found'");
 $stmt->execute([$id]);
 $item = $stmt->fetch();
@@ -98,6 +100,13 @@ include 'header.php';
                         <?php echo nl2br(htmlspecialchars($item['description'])); ?>
                     </div>
                 </div>
+
+                <?php if ($item['linked_lost_item_id']): ?>
+                    <div class="alert alert-info mb-4">
+                        <i class="fa-solid fa-link me-1"></i> Reported in response to lost item:
+                        <a href="lost_detail.php?id=<?php echo (int) $item['linked_lost_item_id']; ?>" class="alert-link"><?php echo htmlspecialchars($item['linked_lost_title']); ?></a>
+                    </div>
+                <?php endif; ?>
 
                 <!-- Finder Contact Credentials Summary Panel -->
                 <div class="p-4 mb-4 border border-light-subtle rounded" style="background-color: #bce5db; border-radius: 8px;">
