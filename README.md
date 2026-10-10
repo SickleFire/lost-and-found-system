@@ -54,25 +54,54 @@ The database `lost_and_found_db` consists of 4 tightly integrated relational tab
 
 ## 🚀 Installation & Setup Instructions
 
-1. **Prerequisites**:
-   - Install **XAMPP** (or any LAMP/WAMP stack with PHP 8.0+ and MySQL / MariaDB).
-2. **Database Setup**:
-   - Start Apache and MySQL in XAMPP Control Panel.
-   - Open **phpMyAdmin** (`http://localhost/phpmyadmin/`).
-   - Import the provided `database.sql` file, or create a database named `lost_and_found_db` and run the SQL script.
-   - If upgrading an existing database, run this once to add found-to-lost links:
-     ```sql
-     ALTER TABLE items
-       ADD COLUMN related_lost_item_id INT DEFAULT NULL AFTER item_type,
-       ADD CONSTRAINT fk_found_lost_item FOREIGN KEY (related_lost_item_id)
-         REFERENCES items (item_id) ON DELETE SET NULL,
-       ADD INDEX idx_related_lost_item_id (related_lost_item_id);
-     ```
-3. **Project Placement**:
-   - Place the project folder (e.g. `lost-and-found-system`) inside your web server root directory (`htdocs` in XAMPP).
-4. **Access the System**:
-   - Open your browser and navigate to:
-     `http://localhost/lost-and-found-system/index.php`
+Follow these steps to run the project locally with XAMPP on Windows.
+
+### Requirements
+
+- [XAMPP](https://www.apachefriends.org/) with Apache, MySQL, PHP, and the PDO MySQL extension.
+- [Git for Windows](https://git-scm.com/download/win).
+
+### 1. Clone the repository
+
+Open PowerShell and clone the repository into XAMPP's `htdocs` directory:
+
+```powershell
+Set-Location C:\xampp\htdocs
+git clone https://github.com/SickleFire/lost-and-found-system.git
+```
+
+This creates the project folder at `C:\xampp\htdocs\lost-and-found-system`.
+
+### 2. Start XAMPP services
+
+1. Open the **XAMPP Control Panel**.
+2. Start **Apache** and **MySQL**.
+
+### 3. Import the database
+
+1. Open [phpMyAdmin](http://localhost/phpmyadmin/).
+2. Select the **Import** tab from the phpMyAdmin home page.
+3. Choose `C:\xampp\htdocs\lost-and-found-system\database.sql` and select **Import** (or **Go**).
+
+The SQL script creates and populates the `lost_and_found_db` database, so do not create that database separately before importing.
+
+The default connection in `db.php` uses MySQL host `localhost`, username `root`, and an empty password, as in a standard XAMPP setup. If your MySQL credentials differ, update the connection settings in `db.php`.
+
+### 4. Open the application
+
+Visit [http://localhost/lost-and-found-system/](http://localhost/lost-and-found-system/) in your browser.
+
+### Updating an existing database
+
+If you are upgrading an existing database that predates the found-to-lost item link, run this SQL once:
+
+```sql
+ALTER TABLE items
+  ADD COLUMN related_lost_item_id INT DEFAULT NULL AFTER item_type,
+  ADD CONSTRAINT fk_found_lost_item FOREIGN KEY (related_lost_item_id)
+    REFERENCES items (item_id) ON DELETE SET NULL,
+  ADD INDEX idx_related_lost_item_id (related_lost_item_id);
+```
 
 ---
 
