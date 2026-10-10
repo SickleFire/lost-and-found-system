@@ -18,6 +18,7 @@ A fully-featured, responsive web application built with **PHP**, **PDO**, **MySQ
    - Sort records by date (Newest or Oldest first).
 4. **Claim Verification & Status Tracking**:
    - Community members can file claims on found items by submitting detailed ownership proof.
+   - Items remain open to additional claims while claims are pending, and become unavailable only after approval.
    - Staff/Admins can review, approve, or reject claims with audit notes.
    - Automatic status updates (`Pending Verification`, `Claimed`, `Approved`/`Rejected`).
    - Personal dashboard for members (`my_items.php`) showing live claim tracking status.

@@ -27,8 +27,8 @@ if ($item['user_id'] == $user_id) {
     $error = "You cannot file a claim on an item that you reported found.";
 }
 
-// Validation: Item must be open / unclaimed (status_id 1 = Open / Unclaimed)
-if ($item['status_id'] != 1) {
+// Items remain claimable while claims are pending (status_id 2 = Pending Verification).
+if (!in_array((int) $item['status_id'], [1, 2], true)) {
     $error = "This item is currently " . strtolower($item['status']) . " and is not open for new claims.";
 }
 
@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($error)) {
         // Insert claim record (c_status id 1 = Pending in c_status table)
         $stmtInsert = $pdo->prepare("INSERT INTO claims (item_id, claimer_user_id, proof_description, status_id, created_at) VALUES (?, ?, ?, 1, NOW())");
         if ($stmtInsert->execute([$item_id, $user_id, $proof_description])) {
-            // Update item status to Pending Verification (status_id 2)
+            // Keep the item available for additional claims until one is approved.
             $stmtUpdateItem = $pdo->prepare("UPDATE items SET status_id = 2 WHERE item_id = ?");
             $stmtUpdateItem->execute([$item_id]);
 

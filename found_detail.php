@@ -18,6 +18,8 @@ if (!$item) {
     exit;
 }
 
+$isClaimable = in_array((int) $item['status_id'], [1, 2], true);
+
 // Security evaluation check tracking administrative profile access credentials
 $canEdit = false;
 if (isLoggedIn()) {
@@ -106,8 +108,7 @@ include 'header.php';
                 </div>
 
                 <!-- Conditional Status Actions Panel Area Block -->
-                <?php if ($item['status'] === 'Claimed' || $item['status'] === 'Closed' || $item['status'] === 'Pending Verification'): ?>
-                    <!-- FIXED: Greyed-out layout block explicitly emphasizing that claims are locked out -->
+                <?php if (!$isClaimable): ?>
                     <div class="alert border-0 text-secondary p-3 d-flex align-items-center justify-content-center mb-4 small" style="border-radius: 8px; font-weight: 500; background-color: #e2e3e5 !important; color: #41464b !important;">
                         <i class="fa-solid fa-lock me-2 text-secondary"></i> This item is no longer available for claims.
                     </div>
@@ -119,14 +120,14 @@ include 'header.php';
                     
                     <div class="d-flex align-items-center gap-2">
                         <?php if (isLoggedIn()): ?>
-                            <?php if ($_SESSION['user_id'] != $item['user_id'] && $item['status_id'] == 1): ?>
+                            <?php if ($_SESSION['user_id'] != $item['user_id'] && $isClaimable): ?>
                                 <a href="claim_item.php?item_id=<?php echo $id; ?>" class="btn btn-success fw-bold px-4 py-1.5 d-inline-flex align-items-center" style="border-radius: 20px; font-size: 0.85rem; background-color: #198754; border: none;">
                                     <i class="fa-solid fa-handshake me-1.5 small"></i> Claim This Item
                                 </a>
                             <?php elseif ($_SESSION['user_id'] == $item['user_id']): ?>
                                 <span class="text-muted small italic me-2">This is an item you reported found.</span>
                             <?php endif; ?>
-                        <?php else: ?>
+                        <?php elseif ($isClaimable): ?>
                             <a href="login.php" class="btn btn-outline-success px-3 py-1.5 fw-bold" style="border-radius: 20px; font-size: 0.85rem;">Log in to Claim</a>
                         <?php endif; ?>
 

@@ -33,8 +33,18 @@ if (!empty($action) && $claim_id > 0) {
         }
     } elseif ($action === 'reject') {
         // Reject this claim request (status_id 3 = Rejected)
+        $stmtClaim = $pdo->prepare("SELECT item_id FROM claims WHERE claim_id = ?");
+        $stmtClaim->execute([$claim_id]);
+        $claimData = $stmtClaim->fetch();
+
         $stmtReject = $pdo->prepare("UPDATE claims SET status_id = 3, updated_at = NOW() WHERE claim_id = ?");
-        if ($stmtReject->execute([$claim_id])) {
+        if ($claimData && $stmtReject->execute([$claim_id])) {
+            $stmtPendingClaims = $pdo->prepare("SELECT COUNT(*) FROM claims WHERE item_id = ? AND status_id = 1");
+            $stmtPendingClaims->execute([$claimData['item_id']]);
+            if ((int) $stmtPendingClaims->fetchColumn() === 0) {
+                $stmtReopenItem = $pdo->prepare("UPDATE items SET status_id = 1 WHERE item_id = ? AND status_id = 2");
+                $stmtReopenItem->execute([$claimData['item_id']]);
+            }
             $success = 'Claim request has been rejected successfully.';
         }
     }
